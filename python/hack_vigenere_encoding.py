@@ -16,11 +16,11 @@ class CipherUtils:
         return True
 
     @staticmethod
-    def checkEveryNthSymbolMatchesModulo(plaintext, ciphertext, n, shift):
-        assert len(plaintext) == len(ciphertext)
+    def checkEveryNthSymbolMatchesModulo(Plaintext, Ciphertext, n, shift):
+        assert len(Plaintext) == len(Ciphertext)
         delta = None
-        for i in range(shift, len(plaintext), n):
-            d = ord(plaintext[i]) - ord(ciphertext[i])
+        for i in range(shift, len(Plaintext), n):
+            d = ord(Plaintext[i]) - ord(Ciphertext[i])
 
             if delta is None:
                 delta = d
@@ -58,20 +58,32 @@ class CiphertextOnly:
         "Dear <name>" "Sincerely yours, <name>" etc
     """
 
-    def __init__(self):
+    def __init__(self, Ciphertext):
+        self.ciphertext = Ciphertext
         pass
 
-    def deduceKeyWithUnsecureMessage(self):
-        pass
+    def deduceKeyWithUnsecureMessage(self, startsWith):
+        return KnownPlainText([startsWith], [self.ciphertext[:len(startsWith)]]).deduceKey()
 
     def deduceKey(self):
-        pass
+        raise Exception(
+            "It is impossible to deduce the key given only ciphertext (additional assumptions are required)")
 
     def deducePlainText(self):
-        pass
+        Key = self.deduceKey()
+
+    def deducePlainTextWithUnsecureMessage(self, startsWith):
+        Key = self.deduceKeyWithUnsecureMessage(startsWith)
+        return VigenereEncoding(Key).decodeString(self.ciphertext)
 
     def modifyMessage(self):
-        pass
+        Key = self.deduceKey()
+
+    def modifyUnsecureMessage(self, startsWith):
+        _plaintext = self.deducePlainTextWithUnsecureMessage(startsWith)
+        Key = self.deduceKeyWithUnsecureMessage(startsWith)
+        _plaintext += "whoami"
+        return VigenereEncoding(Key).encodeString(_plaintext).lower()
 
 
 class KnownPlainText:
@@ -87,7 +99,7 @@ class KnownPlainText:
         self.plaintexts = plaintext_samples
 
     def deduceKeyWithUnsecureMessage(self):
-        pass
+        return self.deduceKey()
 
     def deduceKey(self):
         iterKeyLength = 0
@@ -100,21 +112,21 @@ class KnownPlainText:
             for i in range(len(self.plaintexts)):
                 plain = self.plaintexts[i]
                 cipher = self.ciphertexts[i]
-                key = ""
+                Key = ""
                 for shift in range(iterKeyLength):
                     matched, delta = CipherUtils.checkEveryNthSymbolMatchesModulo(
                         plain, cipher, iterKeyLength, shift)
                     if not matched:
                         break
-                    key += chr(ord('a') + delta % 26)
+                    Key += chr(ord('a') + delta % 26)
                 if not matched:
                     break
                 if keyGlobal is None:
-                    keyGlobal = key
+                    keyGlobal = Key
                     continue
-                elif key != keyGlobal:
+                elif Key != keyGlobal:
                     raise Exception("invalid state")
-                keyGlobal = key
+                keyGlobal = Key
             if matched:
                 return keyGlobal
 
@@ -140,10 +152,10 @@ class KnownPlainText:
         raise Exception("Failed to deduce the key length.")
 
     def deducePlainText(self):
-        pass
+        raise Exception("The solution is obvious after the key is found")
 
     def modifyMessage(self):
-        pass
+        raise Exception("The solution is obvious after the key is found")
 
 
 class ChosenPlainText:
@@ -153,9 +165,9 @@ class ChosenPlainText:
     Ewa has unlimited access to the encoder
     """
 
-    def __init__(self, encoder, plaintext):
+    def __init__(self, encoder, Plaintext):
         self.encoder = encoder
-        self.plaintext = plaintext
+        self.plaintext = Plaintext
 
     def deduceKeyWithUnsecureMessage(self):
         return self.deduceKey()
@@ -184,9 +196,9 @@ class ChosenCiphertext:
     Ewa has unlimited access to the decoder
     """
 
-    def __init__(self, decoder, ciphertext):
+    def __init__(self, decoder, Ciphertext):
         self.decoder = decoder
-        self.ciphertext = ciphertext
+        self.ciphertext = Ciphertext
 
     def deduceKeyWithUnsecureMessage(self):
         return self.deduceKey()
@@ -197,8 +209,8 @@ class ChosenCiphertext:
         return CipherUtils.shortestCyclicSubstringLen(textDecoded)
 
     def deduceKey(self):
-        keyLength = self.deduceKeyLength()
-        decoded = self.decoder.decodeString("a" * keyLength)
+        key_length = self.deduceKeyLength()
+        decoded = self.decoder.decodeString("a" * key_length)
         alphabet = [chr(x) for x in range(ord('a'), ord('z') + 1)]
         alpha = dict((alphabet[i], i) for i in range(len(alphabet)))
         return "".join(alphabet[(-alpha[x]) % len(alphabet)] for x in decoded)
@@ -211,8 +223,19 @@ class ChosenCiphertext:
 
 
 if __name__ == '__main__':
-    action = "test2"
-    if action == "test2":
+    action = "test1"
+    if action == "test1":
+        key = "master"
+        encoding = VigenereEncoding(key)
+        plaintext = "hellohowarethingsgoing"
+        ciphertext = encoding.encodeString(plaintext).lower()
+        test1 = CiphertextOnly(ciphertext)
+
+        print(test1.deducePlainTextWithUnsecureMessage("helloho"))
+        print(test1.modifyUnsecureMessage("helloho"))
+        print(test1.deduceKeyWithUnsecureMessage("helloho"))
+
+    elif action == "test2":
         key = "avocado"
         encoding = VigenereEncoding(key)
         plaintexts = [
