@@ -90,7 +90,33 @@ class KnownPlainText:
         pass
 
     def deduceKey(self):
-        pass
+        iterKeyLength = 0
+        maxLen = max(len(x) for x in self.plaintexts)
+
+        while iterKeyLength <= maxLen:
+            iterKeyLength += 1
+            matched = True
+            keyGlobal = None
+            for i in range(len(self.plaintexts)):
+                plain = self.plaintexts[i]
+                cipher = self.ciphertexts[i]
+                key = ""
+                for shift in range(iterKeyLength):
+                    matched, delta = CipherUtils.checkEveryNthSymbolMatchesModulo(
+                        plain, cipher, iterKeyLength, shift)
+                    if not matched:
+                        break
+                    key += chr(ord('a') + delta % 26)
+                if not matched:
+                    break
+                if keyGlobal is None:
+                    keyGlobal = key
+                    continue
+                elif key != keyGlobal:
+                    raise Exception("invalid state")
+                keyGlobal = key
+            if matched:
+                return keyGlobal
 
     def deduceKeyLength(self):
         iterKeyLength = 0
@@ -193,10 +219,10 @@ if __name__ == '__main__':
             "sometexttobedecodedblahblahblah", "happynewyear", "mydearfriends"
         ]
         ciphers = [encoding.encodeString(x).lower() for x in plaintexts]
-        print(ciphers)
         test2 = KnownPlainText(plaintexts, ciphers)
         keyLength = test2.deduceKeyLength()
         print(keyLength)
+        print(test2.deduceKey())
 
     elif action == "test3":
         key = "banana"
