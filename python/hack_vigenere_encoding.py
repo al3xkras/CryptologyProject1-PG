@@ -9,10 +9,8 @@ hacking_types = [
 
 class CipherUtils:
     @staticmethod
-    def checkEveryNthSymbolEq(string, symbol, n):
-        assert len(symbol == 1)
-        assert round(len(string) / n, 3) is int
-        for i in range(0, len(string) + n, n):
+    def checkEveryNthSymbolEq(string, symbol, n, shift):
+        for i in range(shift, len(string), n):
             if string[i] != symbol:
                 return False
         return True
@@ -22,8 +20,10 @@ class CipherUtils:
         cycleLen = 1
         while cycleLen < len(string):
             eq = None
+            i = 0
             for symbol in string[:cycleLen]:
-                eq = CipherUtils.checkEveryNthSymbolEq(string, symbol, cycleLen)
+                eq = CipherUtils.checkEveryNthSymbolEq(string, symbol, cycleLen, shift=i)
+                i += 1
                 if not eq:
                     break
             if eq:
@@ -55,7 +55,7 @@ class CiphertextOnly:
     def deducePlainText(self):
         pass
 
-    def modifyPlainText(self):
+    def modifyMessage(self):
         pass
 
 
@@ -76,7 +76,7 @@ class KnownPlainText:
     def deducePlainText(self):
         pass
 
-    def modifyPlainText(self):
+    def modifyMessage(self):
         pass
 
 
@@ -96,7 +96,7 @@ class ChosenPlainText:
     def deducePlainText(self):
         pass
 
-    def modifyPlainText(self):
+    def modifyMessage(self):
         pass
 
 
@@ -107,13 +107,12 @@ class ChosenCiphertext:
     Ewa has unlimited access to the decoder
     """
 
-    def __init__(self, decoder):
+    def __init__(self, decoder, ciphertext):
         self.decoder = decoder
-        self.ciphertext = \
-            """abcd"""
+        self.ciphertext = ciphertext
 
     def deduceKeyWithUnsecureMessage(self):
-        pass
+        return self.deduceKey()
 
     def deduceKeyLength(self):
         text = "a" * len(self.ciphertext)
@@ -122,15 +121,23 @@ class ChosenCiphertext:
 
     def deduceKey(self):
         keyLength = self.deduceKeyLength()
-        return self.decoder.decodeString("A" * keyLength)
+        decoded = self.decoder.decodeString("a" * keyLength)
+        alphabet = [chr(x) for x in range(ord('a'), ord('z') + 1)]
+        alpha = dict((alphabet[i], i) for i in range(len(alphabet)))
+        return "".join(alphabet[(-alpha[x]) % len(alphabet)] for x in decoded)
 
     def deducePlainText(self):
         return self.decoder.decodeString(self.ciphertext)
 
-    def modifyPlainText(self):
+    def modifyMessage(self):
         raise Exception("the solution is obvious.")
 
 
 if __name__ == '__main__':
-    key = ""
-    encoder = VigenereEncoding(key)
+
+    key = "lemon"
+    encoding = VigenereEncoding(key)
+    test4 = ChosenCiphertext(encoding, encoding.encodeString("attackatdawn"))
+    length = test4.deduceKeyLength()
+    print(length)
+    print(test4.deduceKey())
