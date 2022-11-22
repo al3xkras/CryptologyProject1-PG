@@ -16,6 +16,21 @@ class CipherUtils:
         return True
 
     @staticmethod
+    def checkEveryNthSymbolMatchesModulo(plaintext, ciphertext, n, shift):
+        assert len(plaintext) == len(ciphertext)
+        delta = None
+        for i in range(shift, len(plaintext), n):
+            d = ord(plaintext[i]) - ord(ciphertext[i])
+
+            if delta is None:
+                delta = d
+                continue
+
+            if d != delta and (abs(d) + abs(delta)) % 26 != 0:
+                return False, None
+        return True, delta
+
+    @staticmethod
     def shortestCyclicSubstringLen(string):
         cycleLen = 1
         while cycleLen < len(string):
@@ -67,11 +82,36 @@ class KnownPlainText:
         encoded with the same algorithm
     """
 
+    def __init__(self, ciphertext_samples, plaintext_samples):
+        self.ciphertexts = ciphertext_samples
+        self.plaintexts = plaintext_samples
+
     def deduceKeyWithUnsecureMessage(self):
         pass
 
     def deduceKey(self):
         pass
+
+    def deduceKeyLength(self):
+        iterKeyLength = 0
+        maxLen = max(len(x) for x in self.plaintexts)
+
+        while iterKeyLength <= maxLen:
+            iterKeyLength += 1
+            matched = True
+            for i in range(len(self.plaintexts)):
+                plain = self.plaintexts[i]
+                cipher = self.ciphertexts[i]
+                for shift in range(iterKeyLength):
+                    matched, delta = CipherUtils.checkEveryNthSymbolMatchesModulo(
+                        plain, cipher, iterKeyLength, shift)
+                    if not matched:
+                        break
+                if not matched:
+                    break
+            if matched:
+                return iterKeyLength
+        raise Exception("Failed to deduce the key length.")
 
     def deducePlainText(self):
         pass
@@ -87,17 +127,28 @@ class ChosenPlainText:
     Ewa has unlimited access to the encoder
     """
 
+    def __init__(self, encoder, plaintext):
+        self.encoder = encoder
+        self.plaintext = plaintext
+
     def deduceKeyWithUnsecureMessage(self):
-        pass
+        return self.deduceKey()
 
     def deduceKey(self):
-        pass
+        keyLen = self.deduceKeyLength()
+        decoded = self.encoder.encodeString("a" * keyLen)
+        return decoded
+
+    def deduceKeyLength(self):
+        text = "a" * len(self.plaintext)
+        textEncoded = self.encoder.encodeString(text)
+        return CipherUtils.shortestCyclicSubstringLen(textEncoded)
 
     def deducePlainText(self):
-        pass
+        return self.plaintext
 
     def modifyMessage(self):
-        pass
+        raise Exception("This action does not require breaking the cipher")
 
 
 class ChosenCiphertext:
@@ -134,10 +185,30 @@ class ChosenCiphertext:
 
 
 if __name__ == '__main__':
+    action = "test2"
+    if action == "test2":
+        key = "avocado"
+        encoding = VigenereEncoding(key)
+        plaintexts = [
+            "sometexttobedecodedblahblahblah", "happynewyear", "mydearfriends"
+        ]
+        ciphers = [encoding.encodeString(x).lower() for x in plaintexts]
+        print(ciphers)
+        test2 = KnownPlainText(plaintexts, ciphers)
+        keyLength = test2.deduceKeyLength()
+        print(keyLength)
 
-    key = "lemon"
-    encoding = VigenereEncoding(key)
-    test4 = ChosenCiphertext(encoding, encoding.encodeString("attackatdawn"))
-    length = test4.deduceKeyLength()
-    print(length)
-    print(test4.deduceKey())
+    elif action == "test3":
+        key = "banana"
+        encoding = VigenereEncoding(key)
+        test3 = ChosenPlainText(encoding, "ninetyninebugsfixed")
+        keyLength = test3.deduceKeyLength()
+        print(keyLength)
+        print(test3.deduceKey())
+    elif action == "test4":
+        key = "lemon"
+        encoding = VigenereEncoding(key)
+        test3 = ChosenCiphertext(encoding, encoding.encodeString("attackatdawn"))
+        keyLength = test3.deduceKeyLength()
+        print(keyLength)
+        print(test3.deduceKey())
