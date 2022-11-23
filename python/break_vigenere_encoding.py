@@ -227,13 +227,13 @@ if __name__ == '__main__':
     if action == "test1":
         key = "master"
         encoding = VigenereEncoding(key)
-        plaintext = "hellohowarethingsgoing"
+        plaintext = "thesolutionisobvious"
         ciphertext = encoding.encodeString(plaintext).lower()
         test1 = CiphertextOnly(ciphertext)
 
-        print(test1.deducePlainTextWithUnsecureMessage("helloho"))
-        print(test1.modifyUnsecureMessage("helloho"))
-        print(test1.deduceKeyWithUnsecureMessage("helloho"))
+        print(test1.deducePlainTextWithUnsecureMessage("thesolu"))
+        print(test1.modifyUnsecureMessage("thesolu"))
+        print(test1.deduceKeyWithUnsecureMessage("thesolu"))
 
     elif action == "test2":
         key = "avocado"
@@ -254,6 +254,7 @@ if __name__ == '__main__':
         keyLength = test3.deduceKeyLength()
         print(keyLength)
         print(test3.deduceKey())
+
     elif action == "test4":
         key = "lemon"
         encoding = VigenereEncoding(key)

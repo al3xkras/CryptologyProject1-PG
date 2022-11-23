@@ -1,3 +1,5 @@
+from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator
+
 class VigenereEncoding:
     """
     A python implementation of the Vigenere Cipher
@@ -18,11 +20,13 @@ class VigenereEncoding:
             self.alphabet = VigenereEncoding.alphabet
         self.alpha = dict((self.alphabet[i], i) for i in range(len(self.alphabet)))
 
+    @letter_encode_decorator
     def encodeLetter(self, textLetter, keyLetter):
         textLetter = textLetter[0].lower()
         keyLetter = keyLetter[0].lower()
         return self.alphabet[(self.alpha[textLetter] + self.alpha[keyLetter]) % len(self.alpha)]
 
+    @letter_decode_decorator
     def decodeLetter(self, encodedLetter, keyLetter):
         encodedLetter = encodedLetter[0].lower()
         keyLetter = keyLetter[0].lower()
