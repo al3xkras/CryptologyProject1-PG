@@ -1,37 +1,64 @@
 import sys
-import tkinter as tk
-from functools import wraps
 import threading
 from time import sleep
-class Symbol:
+
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+matplotlib.use('TkAgg')
+
+try:
+    import Tkinter as tk
+except ImportError:
+    import tkinter as tk
+
+class LaTeXFrame:
     width=30
     height=30
     font_size = 14
     offset=5
-    indent=50
-    def __init__(self, canvas:tk.Canvas, pos, symbol):
-        self.canvas=canvas
+    indent=5
+    def __init__(self, master:tk.Tk, pos, latex):
+        self.fig = None
+        self.ax = None
+        self.master=master
         self.pos=pos
-        self.symbol=symbol
-        self.rect=None
-        self.text=None
+        self.symbol=latex
+        self.label = None
+        self.mainframe = None
+        self.canvas = None
     def draw(self):
-        x1=self.pos[0]
-        x2=self.pos[0]+Symbol.width
-        y1=self.pos[1]
-        y2=self.pos[1]+Symbol.height
-        self.rect=self.canvas.create_rectangle(x1,y1,x2,y2)
-        self.text=self.canvas.create_text(x1+Symbol.width/2-Symbol.font_size/2+Symbol.offset,
-                                          y1+Symbol.height/2-Symbol.font_size/2+Symbol.offset,
-                                font=str(Symbol.font_size), text=self.symbol)
+
+        root = self.master
+
+        self.mainframe = tk.Frame(root)
+        self.mainframe.pack(side="left")
+
+        self.label = tk.Label(self.mainframe)
+        self.label.pack()
+
+        self.fig = matplotlib.figure.Figure(figsize=(0.5, 0.5), dpi=100)
+        self.ax = self.fig.add_subplot(111)
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.label)
+        self.canvas.get_tk_widget().pack()
+        self.canvas._tkcanvas.pack()
+
+        self.ax.get_xaxis().set_visible(False)
+        self.ax.get_yaxis().set_visible(False)
+
+        text = "abc"
+        text = "$" + text + "$"
+        self.ax.clear()
+        self.ax.text(0.2, 0.6, text, fontsize=10)
+        self.canvas.draw()
+
     def remove(self):
-        del self.rect
-        del self.text
+        self.mainframe.destroy()
 
     def drawNextTo(self, other):
-        self.pos=(other.pos[0]+Symbol.width+Symbol.offset,other.pos[1])
+        self.pos=(other.pos[0] + LaTeXFrame.width + LaTeXFrame.offset, other.pos[1])
         self.draw()
-
 
 lock1=threading.Lock()
 class VigenereEncodingGUI:
@@ -45,8 +72,13 @@ class VigenereEncodingGUI:
         self.ciphertext_output=None
         self.button_encode=None
         self.button_decode=None
-        self.gui_fragment=tk.Canvas(self.screen,width=500,height=300,background="green")
-        self.gui_fragment.pack(fill="both",expand=True)
+        self.frames=[
+            tk.Frame(self.screen, width=0, height=50, background="green"),
+            tk.Frame(self.screen, width=0, height=50, background="red"),
+            tk.Frame(self.screen, width=0, height=50, background="yellow")
+        ]
+        for x in self.frames:
+            x.pack(side="top",fill="x", expand=True)
         self.last_symbol_encoded=[None,None,None]
         self.fragment_symbols=[]
         self.w=VigenereEncodingGUI.w
@@ -59,29 +91,32 @@ class VigenereEncodingGUI:
         self.h=h
 
     def drawNextEncodedLetter(self,keyLetter, textLetter, encoded):
-        self._drawNextEncoded(keyLetter, 1, offset=100)
-        self._drawNextEncoded(textLetter, 0)
-        self._drawNextEncoded(encoded, 2, offset=70)
+        s2=self._drawNextEncoded(keyLetter, 1)
+        s1=self._drawNextEncoded(textLetter, 0)
+        s3=self._drawNextEncoded(encoded, 2)
 
     def _drawNextEncoded(self,letter,pos=0,offset=None):
         w=offset
         if offset is None:
-            w=Symbol.offset
+            w=LaTeXFrame.offset
         if self.last_symbol_encoded[pos] is None:
-            sym=Symbol(self.gui_fragment,(Symbol.offset,Symbol.offset+w*pos),
-                       letter)
+            sym=LaTeXFrame(self.frames[pos], (LaTeXFrame.offset, LaTeXFrame.offset + w * pos),
+                           letter)
             self.fragment_symbols.append(sym)
             sym.draw()
             self.last_symbol_encoded[pos]=sym
+            return sym
         else:
-            sym = Symbol(self.gui_fragment, (0,0),
-                         letter)
+            sym = LaTeXFrame(self.frames[pos], (0, 0),
+                             letter)
+            self.fragment_symbols.append(sym)
             sym.drawNextTo(self.last_symbol_encoded[pos])
             self.last_symbol_encoded[pos]=sym
+            return sym
 
     def _clearFragment(self):
         for x in self.fragment_symbols:
-            self.gui_fragment.delete("all")
+            x.remove()
         self.fragment_symbols=[]
         self.last_symbol_encoded=[None,None,None]
 
