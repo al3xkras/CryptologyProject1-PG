@@ -81,9 +81,9 @@ class VigenereEncodingGUI:
 
     def _clearFragment(self):
         for x in self.fragment_symbols:
-            x.remove()
+            self.gui_fragment.delete("all")
         self.fragment_symbols=[]
-        self.last_symbol_encoded=None
+        self.last_symbol_encoded=[None,None,None]
 
 
     def drawNextDecodedLetter(self,keyLetter, encodedLetter, decoded):
@@ -106,7 +106,7 @@ def initGui():
     gui = VigenereEncodingGUI()
     lock.release()
     gui.mainloop()
-thr = threading.Thread(target=initGui,daemon=True)
+thr = threading.Thread(target=initGui)
 thr.start()
 lock.acquire()
 
@@ -136,6 +136,7 @@ def string_encoder(function):
     global gui
     def wrapper(self, *args, **kwargs):
         res = function(self,*args,**kwargs)
+        sleep(2)
         gui._clearFragment()
         return res
     return wrapper
@@ -144,6 +145,7 @@ def string_decoder(function):
     global gui
     def wrapper(self, *args, **kwargs):
         res = function(self,*args,**kwargs)
+        sleep(2)
         gui._clearFragment()
         return res
     return wrapper
@@ -164,5 +166,6 @@ def letter_decode_decorator(function):
             print("failed to visualize next decoded letter: ", keyLetter, encodedLetter, decoded)
         return decoded
     return wrapper
+
 
 

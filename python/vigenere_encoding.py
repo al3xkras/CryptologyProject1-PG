@@ -56,7 +56,8 @@ class VigenereEncoding:
 
 if __name__ == '__main__':
     v = VigenereEncoding("lemon")
-    enc = v.encodeString("attackatdawn")
+    enc = v.encodeString("ata")
+    enc = v.encodeString("cka")
     print(enc)
     dec = v.decodeString(enc)
     print(dec)
