@@ -1,5 +1,5 @@
 from vigenere_encoding import VigenereEncoding
-
+from vigenere_encoding_gui import VigenereEncodingGUI
 hacking_types = [
     "key_deduction",
     "plaintext_deduction",
@@ -223,7 +223,8 @@ class ChosenCiphertext:
 
 
 if __name__ == '__main__':
-    action = "test1"
+
+    action = "test2"
     if action == "test1":
         key = "master"
         encoding = VigenereEncoding(key)

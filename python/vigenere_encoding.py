@@ -1,4 +1,4 @@
-from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator
+from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator,string_encoder,string_decoder
 
 class VigenereEncoding:
     """
@@ -32,6 +32,7 @@ class VigenereEncoding:
         keyLetter = keyLetter[0].lower()
         return self.alphabet[(self.alpha[encodedLetter] - self.alpha[keyLetter]) % len(self.alpha)]
 
+    @string_encoder
     def encodeString(self, string):
         i = 0
         mod = len(self.key)
@@ -40,6 +41,8 @@ class VigenereEncoding:
             encoded += self.encodeLetter(s, self.key[i])
             i = (i + 1) % mod
         return encoded.upper()
+
+    @string_decoder
 
     def decodeString(self, string):
         i = 0
