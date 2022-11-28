@@ -1,4 +1,4 @@
-from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator,string_encoder,string_decoder
+from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator,string_encoder,string_decoder, mainloop_handler
 
 class VigenereEncoding:
     """
@@ -53,11 +53,14 @@ class VigenereEncoding:
             i = (i + 1) % mod
         return encoded
 
-
-if __name__ == '__main__':
+@mainloop_handler
+def main():
     v = VigenereEncoding("lemon")
     enc = v.encodeString("ata")
     enc = v.encodeString("cka")
     print(enc)
     dec = v.decodeString(enc)
     print(dec)
+
+if __name__ == '__main__':
+    main()

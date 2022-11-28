@@ -68,7 +68,7 @@ lock1=threading.Lock()
 class VigenereEncodingGUI:
     letter_delay=0.3
     clear_delay=0.05
-    max_frames=3
+    max_frames=7
     w=500
     h=LaTeXFrame.dpi*4
     scr_size="%sx%s"%(w,h)
@@ -95,8 +95,8 @@ class VigenereEncodingGUI:
         self.fragment_symbols=[]
         self.w=VigenereEncodingGUI.w
         self.h=VigenereEncodingGUI.h
-        self._drawNext("+  (mod 26)", 1, _include=False, size=(4,1))
-        self._drawNext("=", 3, _include=False, size=(4,1))
+        self._drawNext("+ (mod 26)", 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
+        self._drawNext("=", 3, _include=False, size=(VigenereEncodingGUI.max_frames,1))
 
     def resize(self,w,h):
         scr_size="%sx%s"%(w,h)
@@ -153,14 +153,18 @@ class BreakVigenereEncodingGUI:
         self.screen = screen
 
 
-gui=None
-def initGui():
+
+def mainloop_handler(function):
     global gui
     gui = VigenereEncodingGUI()
     gui._clearFragment()
-    gui.mainloop()
-thr = threading.Thread(target=initGui)
-thr.start()
+    def wrapper(*args, **kwargs):
+        def func():
+            return function(*args,*kwargs)
+        thr = threading.Thread(target=func, daemon=True)
+        thr.start()
+        gui.mainloop()
+    return wrapper
 
 
 def letter_encode_decorator(function):
@@ -175,13 +179,7 @@ def letter_encode_decorator(function):
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]
         textLetter = kwargs["textLetter"] if "textLetter" in kwargs else args[0]
         encoded = function(self, *args, **kwargs)
-        try:
-            if thr.is_alive():
-                gui.drawNextLetter(keyLetter, textLetter, encoded)
-        except:
-            print("failed to visualize next encoded letter: ", keyLetter, textLetter, encoded)
-            sys.exit(0)
-
+        gui.drawNextLetter(keyLetter, textLetter, encoded)
         lock1.release()
         return encoded
     return wrapper
@@ -215,11 +213,7 @@ def letter_decode_decorator(function):
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]
         encodedLetter = kwargs["encodedLetter"] if "encodedLetter" in kwargs else args[0]
         decoded = function(self, *args, **kwargs)
-        try:
-            if thr.is_alive():
-                gui.drawNextLetter(keyLetter, encodedLetter, decoded)
-        except:
-            print("failed to visualize next decoded letter: ", keyLetter, encodedLetter, decoded)
+        gui.drawNextLetter(keyLetter, encodedLetter, decoded)
         return decoded
     return wrapper
 
