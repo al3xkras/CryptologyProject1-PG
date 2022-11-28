@@ -43,7 +43,6 @@ class VigenereEncoding:
         return encoded.upper()
 
     @string_decoder
-
     def decodeString(self, string):
         i = 0
         mod = len(self.key)
@@ -59,9 +58,4 @@ if __name__ == '__main__':
     @mainloop_handler
     def main():
         v = VigenereEncoding("lemon")
-        enc = v.encodeString("ata")
-        enc = v.encodeString("cka")
-        print(enc)
-        dec = v.decodeString(enc)
-        print(dec)
     main()

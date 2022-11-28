@@ -12,6 +12,8 @@ try:
 except ImportError:
     import tkinter as tk
 
+alphabet = [chr(x) for x in range(ord('a'), ord('z') + 1)]
+
 class LaTeXFrame:
     dpi=40
     font_size = 30
@@ -48,9 +50,11 @@ class LaTeXFrame:
         self.ax.spines['right'].set_visible(False)
         self.ax.spines['bottom'].set_visible(False)
         self.ax.spines['left'].set_visible(False)
-        text=None
-        if self.latex is None or len(self.latex)==0:
-            text="$\\mathbb{}$"
+        self.update()
+    def update(self):
+        text = None
+        if self.latex is None or len(self.latex) == 0:
+            text = "$\\mathbb{}$"
         else:
             text = "$" + self.latex + "$"
         self.ax.clear()
@@ -66,28 +70,53 @@ class LaTeXFrame:
 
 lock1=threading.Lock()
 class VigenereEncodingGUI:
-    letter_delay=0.2
+    letter_delay=0.1
+    font= "16"
     clear_delay=0.05
     post_clear_delay=1
     max_frames=7
-    w=500
-    h=LaTeXFrame.dpi*4
+    w=700
+    h=450
     scr_size="%sx%s"%(w,h)
     def __init__(self):
+        self.enc=None
+        self.operating_thread=None
         self.main=tk.Tk()
         self.main.geometry(VigenereEncodingGUI.scr_size)
-        self.screen = tk.Canvas(self.main)
-        self.screen.pack(expand=True)
-        self.text_input=None
-        self.ciphertext_output=None
-        self.button_encode=None
-        self.button_decode=None
+        self.symbol_canvas = tk.Canvas(self.main)
+
+        self.controls_fr=tk.Frame(self.main)
+
+        self.plaintext_var=tk.StringVar(self.controls_fr)
+        self.plaintext_var.set("plaintext")
+        self.text_input=tk.Entry(self.controls_fr, textvariable=self.plaintext_var, font=VigenereEncodingGUI.font)
+
+        self.key_var=tk.StringVar(self.controls_fr)
+        self.key_var.set("key")
+        self.key_input=tk.Entry(self.controls_fr, textvariable=self.key_var, font=VigenereEncodingGUI.font)
+
+        self.output_var=tk.StringVar(self.controls_fr)
+        self.ciphertext_output=tk.Entry(self.controls_fr, textvariable=self.output_var,fg="black",bg="white",bd=0,state="readonly")
+
+        self.btn_frame=tk.Frame(self.controls_fr)
+        self.button_encode=tk.Button(self.btn_frame, command=self._encode_input, text="encode")
+        self.button_decode=tk.Button(self.btn_frame, command=self._decode_input, text="decode")
+
+        self.text_input.pack(side="top", padx=10, pady=10)
+        self.key_input.pack(side="top", padx=10, pady=10)
+        self.ciphertext_output.pack(side="top")
+        self.button_encode.pack(side="left", padx=10, pady=10)
+        self.button_decode.pack(side="left", padx=10, pady=10)
+        self.btn_frame.pack(side="top")
+        self.controls_fr.pack(side="left", fill="y")
+
+        self.symbol_canvas.pack(side="top",expand=True)
         self.frames=[
-            tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi),
-            tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi),
-            tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi),
-            tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi),
-            tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi)
+            tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
+            tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
+            tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
+            tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
+            tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi)
         ]
         self.letter_frames_count=3
         for x in self.frames:
@@ -96,8 +125,51 @@ class VigenereEncodingGUI:
         self.fragment_symbols=[]
         self.w=VigenereEncodingGUI.w
         self.h=VigenereEncodingGUI.h
-        self._drawNext("+ \\hspace{1} ( mod  \\hspace{0.5} 26 )", 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
-        self._drawNext("=", 3, _include=False, size=(VigenereEncodingGUI.max_frames,1))
+        self.operator_str=" \\hspace{1} ( mod  \\hspace{0.5} 26 )"
+        self.op1=self._drawNext("+"+self.operator_str, 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
+        self.op2=self._drawNext("=", 3, _include=False, size=(VigenereEncodingGUI.max_frames,1))
+
+    def _encode_input(self):
+        assert self.enc is not None
+        if self.operating_thread is not None:
+            return
+        lock=threading.Lock()
+        def _enc():
+            nonlocal lock
+            text = self.plaintext_var.get()
+            key = self.key_var.get()
+            self.enc.key = key
+            self.op1.latex="+"+self.operator_str
+            self.op1.update()
+            if len(key)>0:
+                out=self.enc.encodeString(text)
+                self.output_var.set(out)
+            self.operating_thread=None
+            lock.release()
+        self.operating_thread=threading.Thread(target=_enc)
+        lock.acquire()
+        self.operating_thread.start()
+
+    def _decode_input(self):
+        assert self.enc is not None
+        if self.operating_thread is not None:
+            return
+        lock = threading.Lock()
+        def _dec():
+            nonlocal lock
+            text = self.plaintext_var.get()
+            key = self.key_var.get()
+            self.enc.key = key
+            self.op1.latex="-"+self.operator_str
+            self.op1.update()
+            if len(key) > 0:
+                out=self.enc.decodeString(text).upper()
+                self.output_var.set(out)
+            self.operating_thread = None
+            lock.release()
+        self.operating_thread = threading.Thread(target=_dec)
+        lock.acquire()
+        self.operating_thread.start()
 
     def resize(self,w,h):
         scr_size="%sx%s"%(w,h)
@@ -146,23 +218,32 @@ class VigenereEncodingGUI:
     def drawNextDecodedLetter(self,keyLetter, encodedLetter, decoded):
         pass
     def update(self):
-        self.screen.update()
+        self.symbol_canvas.update()
 
     def mainloop(self):
-        self.screen.mainloop()
+        self.symbol_canvas.mainloop()
 
 class BreakVigenereEncodingGUI:
     def __init__(self, screen):
         self.screen = screen
 
-
+gui=None
+lock2=threading.Lock()
+def _initGui():
+    global gui
+    if gui is None:
+        lock2.acquire()
+        if gui is None:
+            gui = VigenereEncodingGUI()
+            gui._clearFragment()
+        lock2.release()
 
 def mainloop_handler(function):
     global gui
-    gui = VigenereEncodingGUI()
-    gui._clearFragment()
+    _initGui()
     def wrapper(*args, **kwargs):
         def func():
+            gui._clearFragment(True)
             return function(*args,*kwargs)
         thr = threading.Thread(target=func, daemon=True)
         thr.start()
@@ -172,6 +253,7 @@ def mainloop_handler(function):
 
 def letter_encode_decorator(function):
     global gui
+    _initGui()
     keyLetter = None
     encoded = None
     textLetter = None
@@ -189,6 +271,7 @@ def letter_encode_decorator(function):
 
 def string_encoder(function):
     global gui
+    _initGui()
     def wrapper(self, *args, **kwargs):
         gui._clearFragment(encoder=True)
         res = function(self,*args,**kwargs)
@@ -199,6 +282,7 @@ def string_encoder(function):
 
 def string_decoder(function):
     global gui
+    _initGui()
     def wrapper(self, *args, **kwargs):
         gui._clearFragment(encoder=False)
         res = function(self,*args,**kwargs)
@@ -209,6 +293,7 @@ def string_decoder(function):
 
 def letter_decode_decorator(function):
     global gui
+    _initGui()
     keyLetter = None
     decoded = None
     encodedLetter = None
@@ -221,6 +306,7 @@ def letter_decode_decorator(function):
         gui.drawNextLetter(keyLetter, encodedLetter, decoded)
         return decoded
     return wrapper
+
 
 
 
