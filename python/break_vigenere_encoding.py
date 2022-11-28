@@ -6,6 +6,8 @@ hacking_types = [
     "plaintext_modification"
 ]
 
+from vigenere_encoding_gui import mainloop_handler
+
 
 class CipherUtils:
     @staticmethod
@@ -222,8 +224,8 @@ class ChosenCiphertext:
         raise Exception("the solution is obvious.")
 
 
-if __name__ == '__main__':
-
+@mainloop_handler
+def main():
     action = "test2"
     if action == "test1":
         key = "master"
@@ -263,3 +265,6 @@ if __name__ == '__main__':
         keyLength = test3.deduceKeyLength()
         print(keyLength)
         print(test3.deduceKey())
+
+if __name__ == '__main__':
+    main()

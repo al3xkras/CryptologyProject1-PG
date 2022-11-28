@@ -66,8 +66,9 @@ class LaTeXFrame:
 
 lock1=threading.Lock()
 class VigenereEncodingGUI:
-    letter_delay=0.3
+    letter_delay=0.2
     clear_delay=0.05
+    post_clear_delay=1
     max_frames=7
     w=500
     h=LaTeXFrame.dpi*4
@@ -95,7 +96,7 @@ class VigenereEncodingGUI:
         self.fragment_symbols=[]
         self.w=VigenereEncodingGUI.w
         self.h=VigenereEncodingGUI.h
-        self._drawNext("+ (mod 26)", 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
+        self._drawNext("+ \\hspace{1} ( mod  \\hspace{0.5} 26 )", 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
         self._drawNext("=", 3, _include=False, size=(VigenereEncodingGUI.max_frames,1))
 
     def resize(self,w,h):
@@ -104,10 +105,10 @@ class VigenereEncodingGUI:
         self.w=w
         self.h=h
 
-    def drawNextLetter(self, keyLetter, textLetter, encoded):
-        self._drawNext(keyLetter, 2)
-        self._drawNext(textLetter, 0)
-        self._drawNext(encoded, 4)
+    def drawNextLetter(self, keyLetter, textLetter, encoded, size=(1,1), include=True):
+        self._drawNext(keyLetter, 2, size=size, _include=include)
+        self._drawNext(textLetter, 0, size=size, _include=include)
+        self._drawNext(encoded, 4, size=size, _include=include)
 
     def _drawNext(self, latex, pos=0, offset=None, _include=True, size=(1,1)):
         w=offset
@@ -132,13 +133,15 @@ class VigenereEncodingGUI:
             self.fragment_symbols=self.fragment_symbols[self.letter_frames_count:]
         return sym
 
-    def _clearFragment(self):
+    def _clearFragment(self,encoder=None):
         for x in self.fragment_symbols:
             x.remove()
             sleep(VigenereEncodingGUI.clear_delay)
         self.fragment_symbols=[]
         self.last_symbol_encoded=[None]*len(self.frames)
-        self.drawNextLetter("","","")
+
+        if encoder is None:
+            self.drawNextLetter("", "", "")
 
     def drawNextDecodedLetter(self,keyLetter, encodedLetter, decoded):
         pass
@@ -187,18 +190,20 @@ def letter_encode_decorator(function):
 def string_encoder(function):
     global gui
     def wrapper(self, *args, **kwargs):
+        gui._clearFragment(encoder=True)
         res = function(self,*args,**kwargs)
-        sleep(2)
-        gui._clearFragment()
+        sleep(VigenereEncodingGUI.post_clear_delay)
+        gui._clearFragment(encoder=True)
         return res
     return wrapper
 
 def string_decoder(function):
     global gui
     def wrapper(self, *args, **kwargs):
+        gui._clearFragment(encoder=False)
         res = function(self,*args,**kwargs)
-        sleep(2)
-        gui._clearFragment()
+        sleep(VigenereEncodingGUI.post_clear_delay)
+        gui._clearFragment(encoder=False)
         return res
     return wrapper
 

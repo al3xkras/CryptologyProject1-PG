@@ -53,14 +53,15 @@ class VigenereEncoding:
             i = (i + 1) % mod
         return encoded
 
-@mainloop_handler
-def main():
-    v = VigenereEncoding("lemon")
-    enc = v.encodeString("ata")
-    enc = v.encodeString("cka")
-    print(enc)
-    dec = v.decodeString(enc)
-    print(dec)
+
 
 if __name__ == '__main__':
+    @mainloop_handler
+    def main():
+        v = VigenereEncoding("lemon")
+        enc = v.encodeString("ata")
+        enc = v.encodeString("cka")
+        print(enc)
+        dec = v.decodeString(enc)
+        print(dec)
     main()
