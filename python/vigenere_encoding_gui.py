@@ -66,7 +66,9 @@ class LaTeXFrame:
 
 lock1=threading.Lock()
 class VigenereEncodingGUI:
-    max_frames=5
+    letter_delay=0.3
+    clear_delay=0.05
+    max_frames=3
     w=500
     h=LaTeXFrame.dpi*4
     scr_size="%sx%s"%(w,h)
@@ -86,13 +88,14 @@ class VigenereEncodingGUI:
             tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi),
             tk.Frame(self.screen, width=0, height=LaTeXFrame.dpi)
         ]
+        self.letter_frames_count=3
         for x in self.frames:
             x.pack(side="top",fill="both", expand=True)
         self.last_symbol_encoded=[None]*len(self.frames)
         self.fragment_symbols=[]
         self.w=VigenereEncodingGUI.w
         self.h=VigenereEncodingGUI.h
-        self._drawNext("+ (mod{26})", 1, _include=False, size=(4,1))
+        self._drawNext("+  (mod 26)", 1, _include=False, size=(4,1))
         self._drawNext("=", 3, _include=False, size=(4,1))
 
     def resize(self,w,h):
@@ -108,34 +111,31 @@ class VigenereEncodingGUI:
 
     def _drawNext(self, latex, pos=0, offset=None, _include=True, size=(1,1)):
         w=offset
-        f = self.fragment_symbols
         if offset is None:
             w=LaTeXFrame.offset
         if self.last_symbol_encoded[pos] is None:
             sym=LaTeXFrame(self.frames[pos], (LaTeXFrame.offset, LaTeXFrame.offset + w * pos),latex)
             if _include:
-                f.append(sym)
-            if len(f)>VigenereEncodingGUI.max_frames*len(self.frames):
-                f[0].remove()
-                f.remove(0)
+                self.fragment_symbols.append(sym)
             sym.draw(size)
             self.last_symbol_encoded[pos]=sym
         else:
             sym = LaTeXFrame(self.frames[pos], (0, 0),latex)
             if _include:
-                f.append(sym)
+                self.fragment_symbols.append(sym)
             sym.drawNextTo(self.last_symbol_encoded[pos],size)
             self.last_symbol_encoded[pos]=sym
 
-        if len(f) > VigenereEncodingGUI.max_frames * len(self.frames):
-            for i in range(len(self.frames)):
-                f[i].remove()
-            self.fragment_symbols=self.fragment_symbols[len(self.frames):]
+        if len(self.fragment_symbols) > VigenereEncodingGUI.max_frames * self.letter_frames_count:
+            for i in range(self.letter_frames_count):
+                self.fragment_symbols[i].remove()
+            self.fragment_symbols=self.fragment_symbols[self.letter_frames_count:]
         return sym
 
     def _clearFragment(self):
         for x in self.fragment_symbols:
             x.remove()
+            sleep(VigenereEncodingGUI.clear_delay)
         self.fragment_symbols=[]
         self.last_symbol_encoded=[None]*len(self.frames)
         self.drawNextLetter("","","")
@@ -169,7 +169,7 @@ def letter_encode_decorator(function):
     encoded = None
     textLetter = None
     def wrapper(self, *args, **kwargs):
-        sleep(1)
+        sleep(VigenereEncodingGUI.letter_delay)
         lock1.acquire()
         nonlocal keyLetter, encoded, textLetter
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]
@@ -210,7 +210,7 @@ def letter_decode_decorator(function):
     decoded = None
     encodedLetter = None
     def wrapper(self, *args, **kwargs):
-        sleep(1)
+        sleep(VigenereEncodingGUI.letter_delay)
         nonlocal keyLetter, decoded, encodedLetter
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]
         encodedLetter = kwargs["encodedLetter"] if "encodedLetter" in kwargs else args[0]
