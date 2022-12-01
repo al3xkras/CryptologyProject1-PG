@@ -1,4 +1,3 @@
-import sys
 import threading
 from time import sleep,time
 
@@ -6,6 +5,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 matplotlib.use('TkAgg')
+
+from break_vigenere_encoding import CiphertextOnly
 
 try:
     import Tkinter as tk
@@ -128,6 +129,34 @@ class VigenereEncodingGUI:
         self.known_plaintext_fr = tk.Frame(self.break_ciphertext_grid)
         self.chosen_plaintext_fr = tk.Frame(self.break_ciphertext_grid)
         self.chosen_ciphertext_fr = tk.Frame(self.break_ciphertext_grid)
+
+        self.ciphertext_only_cipher=tk.StringVar(self.ciphertext_only_fr)
+        self.ciphertext_only_cipher_prefix=tk.StringVar(self.ciphertext_only_fr)
+        self.ciphertext_only_key=tk.StringVar(self.ciphertext_only_fr)
+
+        self.ciphertext_only_cipher.set("ZPYSRROBR")
+        self.ciphertext_only_cipher_prefix.set("pla")
+
+        def _ciphertextOnly():
+            ciphertext=self.ciphertext_only_cipher.get()
+            prefix=self.ciphertext_only_cipher_prefix.get()
+            print(ciphertext,prefix)
+            key=CiphertextOnly(ciphertext).deduceKeyWithUnsecureMessage(prefix)
+            self.ciphertext_only_key.set(key)
+
+        self.ciphertext_only_cipher_ent = tk.Entry(self.ciphertext_only_fr, textvariable=self.ciphertext_only_cipher)
+        self.ciphertext_only_prefix_ent = tk.Entry(self.ciphertext_only_fr, textvariable=self.ciphertext_only_cipher_prefix)
+        self.ciphertext_only_key_ent = tk.Entry(self.ciphertext_only_fr, textvariable=self.ciphertext_only_key,fg="black",bg="white",bd=0,state="readonly")
+
+        self.ciphertext_only_btn=tk.Button(self.ciphertext_only_fr,command=_ciphertextOnly,text="Decude key")
+
+        self.ciphertext_only_cipher_ent.pack(side="top")
+        self.ciphertext_only_prefix_ent.pack(side="top")
+        self.ciphertext_only_key_ent.pack(side="top")
+        self.ciphertext_only_btn.pack(side="top")
+
+        self.ciphertext_only_fr.pack(side="left")
+        self.break_ciphertext_grid.pack(side="left")
 
         self.frames=[
             tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),

@@ -1,12 +1,9 @@
-from vigenere_encoding import VigenereEncoding
-from vigenere_encoding_gui import VigenereEncodingGUI
+enco=None
 hacking_types = [
     "key_deduction",
     "plaintext_deduction",
     "plaintext_modification"
 ]
-
-from vigenere_encoding_gui import mainloop_handler
 
 
 class CipherUtils:
@@ -61,7 +58,7 @@ class CiphertextOnly:
     """
 
     def __init__(self, Ciphertext):
-        self.ciphertext = Ciphertext
+        self.ciphertext = Ciphertext.lower()
         pass
 
     def deduceKeyWithUnsecureMessage(self, startsWith):
@@ -76,7 +73,8 @@ class CiphertextOnly:
 
     def deducePlainTextWithUnsecureMessage(self, startsWith):
         Key = self.deduceKeyWithUnsecureMessage(startsWith)
-        return VigenereEncoding(Key).decodeString(self.ciphertext)
+        enco.key=Key
+        return enco.decodeString(self.ciphertext)
 
     def modifyMessage(self):
         Key = self.deduceKey()
@@ -85,7 +83,8 @@ class CiphertextOnly:
         _plaintext = self.deducePlainTextWithUnsecureMessage(startsWith)
         Key = self.deduceKeyWithUnsecureMessage(startsWith)
         _plaintext += "whoami"
-        return VigenereEncoding(Key).encodeString(_plaintext).lower()
+        enco.key=Key
+        return enco.encodeString(_plaintext).lower()
 
 
 class KnownPlainText:
@@ -222,49 +221,3 @@ class ChosenCiphertext:
 
     def modifyMessage(self):
         raise Exception("the solution is obvious.")
-
-
-@mainloop_handler
-def main():
-    action = "test2"
-    if action == "test1":
-        key = "master"
-        encoding = VigenereEncoding(key)
-        plaintext = "thesolutionisobvious"
-        ciphertext = encoding.encodeString(plaintext).lower()
-        test1 = CiphertextOnly(ciphertext)
-
-        print(test1.deducePlainTextWithUnsecureMessage("thesolu"))
-        print(test1.modifyUnsecureMessage("thesolu"))
-        print(test1.deduceKeyWithUnsecureMessage("thesolu"))
-
-    elif action == "test2":
-        key = "avocado"
-        encoding = VigenereEncoding(key)
-        plaintexts = [
-            "sometexttobedecodedblahblahblah", "happynewyear", "mydearfriends"
-        ]
-        ciphers = [encoding.encodeString(x).lower() for x in plaintexts]
-        test2 = KnownPlainText(plaintexts, ciphers)
-        keyLength = test2.deduceKeyLength()
-        print(keyLength)
-        print(test2.deduceKey())
-
-    elif action == "test3":
-        key = "banana"
-        encoding = VigenereEncoding(key)
-        test3 = ChosenPlainText(encoding, "ninetyninebugsfixed")
-        keyLength = test3.deduceKeyLength()
-        print(keyLength)
-        print(test3.deduceKey())
-
-    elif action == "test4":
-        key = "lemon"
-        encoding = VigenereEncoding(key)
-        test3 = ChosenCiphertext(encoding, encoding.encodeString("attackatdawn"))
-        keyLength = test3.deduceKeyLength()
-        print(keyLength)
-        print(test3.deduceKey())
-
-if __name__ == '__main__':
-    main()
