@@ -70,9 +70,9 @@ class LaTeXFrame:
 
 lock1=threading.Lock()
 class VigenereEncodingGUI:
-    letter_delay=0.15
+    letter_delay=0.05
     font= "16"
-    clear_delay=0.05
+    clear_delay=0.01
     post_clear_delay=1.5
     max_frames=7
     w=700
@@ -87,7 +87,7 @@ class VigenereEncodingGUI:
         self.anim_interrupt_ev=threading.Event()
 
         self.animation_speed=tk.DoubleVar(self.main)
-        self.animation_speed.set(1.0)
+        self.animation_speed.set(10.0)
 
         self.controls_fr=tk.Frame(self.main)
 
@@ -119,10 +119,16 @@ class VigenereEncodingGUI:
         tk.Label(self.anim_fr,text="Animation speed").pack(side="left")
         self.anim_speed_entry.pack(side="left")
         self.anim_interrupt_btn.pack(side="left")
-        self.anim_fr.pack(side="top")
         self.controls_fr.pack(side="left", fill="y")
+        self.anim_fr.pack(side="top", pady=20)
 
-        self.symbol_canvas.pack(side="top",expand=True)
+        self.symbol_canvas.pack(side="top",anchor="w", padx=50,pady=10)
+        self.break_ciphertext_grid=tk.Frame(self.main)
+        self.ciphertext_only_fr = tk.Frame(self.break_ciphertext_grid)
+        self.known_plaintext_fr = tk.Frame(self.break_ciphertext_grid)
+        self.chosen_plaintext_fr = tk.Frame(self.break_ciphertext_grid)
+        self.chosen_ciphertext_fr = tk.Frame(self.break_ciphertext_grid)
+
         self.frames=[
             tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
             tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
@@ -176,7 +182,7 @@ class VigenereEncodingGUI:
             self.operating_thread=None
             self.anim_interrupt_ev.clear()
             lock.release()
-        self.operating_thread=threading.Thread(target=_enc)
+        self.operating_thread=threading.Thread(target=_enc, daemon=True)
         lock.acquire()
         self.operating_thread.start()
 
@@ -200,7 +206,7 @@ class VigenereEncodingGUI:
             self.operating_thread = None
             self.anim_interrupt_ev.clear()
             lock.release()
-        self.operating_thread = threading.Thread(target=_dec)
+        self.operating_thread = threading.Thread(target=_dec, daemon=True)
         lock.acquire()
         self.operating_thread.start()
 
@@ -308,7 +314,7 @@ def string_encoder(function):
     def wrapper(self, *args, **kwargs):
         gui._clearFragment(encoder=True)
         res = function(self,*args,**kwargs)
-        gui.sleep(VigenereEncodingGUI.post_clear_delay)
+        sleep(VigenereEncodingGUI.post_clear_delay)
         gui._clearFragment(encoder=True)
         return res
     return wrapper
@@ -319,7 +325,7 @@ def string_decoder(function):
     def wrapper(self, *args, **kwargs):
         gui._clearFragment(encoder=False)
         res = function(self,*args,**kwargs)
-        gui.sleep(VigenereEncodingGUI.post_clear_delay)
+        sleep(VigenereEncodingGUI.post_clear_delay)
         gui._clearFragment(encoder=False)
         return res
     return wrapper
