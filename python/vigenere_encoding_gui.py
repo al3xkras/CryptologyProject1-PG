@@ -1,6 +1,6 @@
 import sys
 import threading
-from time import sleep
+from time import sleep,time
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -70,10 +70,10 @@ class LaTeXFrame:
 
 lock1=threading.Lock()
 class VigenereEncodingGUI:
-    letter_delay=0.1
+    letter_delay=0.15
     font= "16"
     clear_delay=0.05
-    post_clear_delay=1
+    post_clear_delay=1.5
     max_frames=7
     w=700
     h=450
@@ -84,6 +84,10 @@ class VigenereEncodingGUI:
         self.main=tk.Tk()
         self.main.geometry(VigenereEncodingGUI.scr_size)
         self.symbol_canvas = tk.Canvas(self.main)
+        self.anim_interrupt_ev=threading.Event()
+
+        self.animation_speed=tk.DoubleVar(self.main)
+        self.animation_speed.set(1.0)
 
         self.controls_fr=tk.Frame(self.main)
 
@@ -102,12 +106,20 @@ class VigenereEncodingGUI:
         self.button_encode=tk.Button(self.btn_frame, command=self._encode_input, text="encode")
         self.button_decode=tk.Button(self.btn_frame, command=self._decode_input, text="decode")
 
+        self.anim_fr = tk.Frame(self.controls_fr)
+
+        self.anim_speed_entry=tk.Entry(self.anim_fr, textvariable=self.animation_speed)
+        self.anim_interrupt_btn=tk.Button(self.anim_fr, command=self._interrupt, text="Interrupt")
         self.text_input.pack(side="top", padx=10, pady=10)
         self.key_input.pack(side="top", padx=10, pady=10)
         self.ciphertext_output.pack(side="top")
         self.button_encode.pack(side="left", padx=10, pady=10)
         self.button_decode.pack(side="left", padx=10, pady=10)
         self.btn_frame.pack(side="top")
+        tk.Label(self.anim_fr,text="Animation speed").pack(side="left")
+        self.anim_speed_entry.pack(side="left")
+        self.anim_interrupt_btn.pack(side="left")
+        self.anim_fr.pack(side="top")
         self.controls_fr.pack(side="left", fill="y")
 
         self.symbol_canvas.pack(side="top",expand=True)
@@ -129,6 +141,21 @@ class VigenereEncodingGUI:
         self.op1=self._drawNext("+"+self.operator_str, 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
         self.op2=self._drawNext("=", 3, _include=False, size=(VigenereEncodingGUI.max_frames,1))
 
+    def _interrupt(self):
+        if self.operating_thread is None:
+            return
+        if self.anim_interrupt_ev.is_set():
+            self.anim_interrupt_ev.clear()
+            return
+        self.anim_interrupt_ev.set()
+
+    def sleep(self, delay):
+        t0=time()
+        while not self.anim_interrupt_ev.is_set() and time()-t0<delay:
+            pass
+        if self.anim_interrupt_ev.is_set():
+            raise Exception("interrupted")
+
     def _encode_input(self):
         assert self.enc is not None
         if self.operating_thread is not None:
@@ -142,9 +169,12 @@ class VigenereEncodingGUI:
             self.op1.latex="+"+self.operator_str
             self.op1.update()
             if len(key)>0:
-                out=self.enc.encodeString(text)
-                self.output_var.set(out)
+                try:
+                    out=self.enc.encodeString(text)
+                    self.output_var.set(out)
+                except: pass
             self.operating_thread=None
+            self.anim_interrupt_ev.clear()
             lock.release()
         self.operating_thread=threading.Thread(target=_enc)
         lock.acquire()
@@ -163,9 +193,12 @@ class VigenereEncodingGUI:
             self.op1.latex="-"+self.operator_str
             self.op1.update()
             if len(key) > 0:
-                out=self.enc.decodeString(text).upper()
-                self.output_var.set(out)
+                try:
+                    out=self.enc.decodeString(text).upper()
+                    self.output_var.set(out)
+                except: pass
             self.operating_thread = None
+            self.anim_interrupt_ev.clear()
             lock.release()
         self.operating_thread = threading.Thread(target=_dec)
         lock.acquire()
@@ -258,7 +291,7 @@ def letter_encode_decorator(function):
     encoded = None
     textLetter = None
     def wrapper(self, *args, **kwargs):
-        sleep(VigenereEncodingGUI.letter_delay)
+        gui.sleep(VigenereEncodingGUI.letter_delay/gui.animation_speed.get())
         lock1.acquire()
         nonlocal keyLetter, encoded, textLetter
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]
@@ -275,7 +308,7 @@ def string_encoder(function):
     def wrapper(self, *args, **kwargs):
         gui._clearFragment(encoder=True)
         res = function(self,*args,**kwargs)
-        sleep(VigenereEncodingGUI.post_clear_delay)
+        gui.sleep(VigenereEncodingGUI.post_clear_delay)
         gui._clearFragment(encoder=True)
         return res
     return wrapper
@@ -286,7 +319,7 @@ def string_decoder(function):
     def wrapper(self, *args, **kwargs):
         gui._clearFragment(encoder=False)
         res = function(self,*args,**kwargs)
-        sleep(VigenereEncodingGUI.post_clear_delay)
+        gui.sleep(VigenereEncodingGUI.post_clear_delay)
         gui._clearFragment(encoder=False)
         return res
     return wrapper
@@ -298,7 +331,7 @@ def letter_decode_decorator(function):
     decoded = None
     encodedLetter = None
     def wrapper(self, *args, **kwargs):
-        sleep(VigenereEncodingGUI.letter_delay)
+        gui.sleep(VigenereEncodingGUI.letter_delay/gui.animation_speed.get())
         nonlocal keyLetter, decoded, encodedLetter
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]
         encodedLetter = kwargs["encodedLetter"] if "encodedLetter" in kwargs else args[0]
