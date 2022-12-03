@@ -146,16 +146,35 @@ class TestMethodCanvas:
             test_method(self)
 
         self.label=None
+        self.frames=[]
         if "label" in kwargs:
             self.label=tk.Label(self.test_frame,text=kwargs["label"], padx=2, pady=2)
         self.var1_label=None
+        self.var1_side="top"
         if "var1" in kwargs:
-            self.var1_label=tk.Label(self.test_frame,text=kwargs["label"], padx=2, pady=2)
-        self.var1_entry = tk.Entry(self.test_frame, textvariable=self.var1)
-        self.var2_entry = tk.Entry(self.test_frame,
-                                   textvariable=self.var2)
-        self.key_entry = tk.Entry(self.test_frame, textvariable=self.key_var,
-                                  fg="black", bg="white", bd=0, state="readonly")
+            self.frames.append(tk.Frame(self.test_frame))
+            fr=self.frames[len(self.frames)-1]
+            self.var1_entry = tk.Entry(fr, textvariable=self.var1)
+            self.var1_label=tk.Label(fr,text=kwargs["var1"], padx=2, pady=2)
+            self.var1_label.pack(side="left")
+            self.var1_side="left"
+        else:
+            self.var1_entry = tk.Entry(self.test_frame, textvariable=self.var1)
+
+        self.var2_label=None
+        self.var2_side="top"
+        if "var2" in kwargs:
+            self.frames.append(tk.Frame(self.test_frame))
+            fr=self.frames[len(self.frames)-1]
+            self.var2_entry = tk.Entry(fr, textvariable=self.var2)
+            self.var2_label=tk.Label(fr,text=kwargs["var2"], padx=2, pady=2)
+            self.var2_label.pack(side="left")
+            self.var2_side="left"
+        else:
+            self.var2_entry = tk.Entry(self.test_frame, textvariable=self.var2)
+
+        self.output_entry = tk.Entry(self.test_frame, textvariable=self.key_var,
+                                     fg="black", bg="white", bd=0, state="readonly")
 
         self.btn_text=tk.StringVar(self.master)
         self.ciphertext_only_btn = tk.Button(self.test_frame, command=_encodingTest, textvariable=self.btn_text)
@@ -166,9 +185,11 @@ class TestMethodCanvas:
         if len(args)==0:
             args=["Deduce key"]
         self.btn_text.set(args[0])
-        self.var1_entry.pack(side="top", padx=5, pady=5)
-        self.var2_entry.pack(side="top", padx=5, pady=5)
-        self.key_entry.pack(side="top", padx=5, pady=5)
+        for x in self.frames:
+            x.pack(side="top")
+        self.var1_entry.pack(side=self.var1_side, padx=5, pady=5)
+        self.var2_entry.pack(side=self.var2_side, padx=5, pady=5)
+        self.output_entry.pack(side="top", padx=5, pady=5)
         self.ciphertext_only_btn.pack(side="top")
         self.test_frame.pack(side="left")
 
@@ -234,16 +255,16 @@ class VigenereEncodingGUI:
         lock=threading.Lock()
         self.ciphertext_only = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.ciphertextOnly_deduceKeyWithUnsecureMessage,lock=lock,
-            label="Ciphertext only",var1="Ciphertext",var2="Starts with")
+            label="Method: Ciphertext only",var1="Ciphertext",var2="Prefix")
         self.known_plaintext = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.knownPlaintext,lock=lock,
-            label="Known plaintext",var1="Ciphertext",var2="Plaintext")
+            label="Method: Known plaintext",var1="Ciphertext",var2="Plaintext")
         self.chosen_plaintext = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.chosenPlaintext_deduceKey,lock=lock,
-            label="Chosen plaintext",var1="Plaintext length",var2="Key")
+            label="Method: Chosen plaintext",var1="Plaintext",var2="Key")
         self.chosen_ciphertext = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.chosenCiphertext_deduceKey,lock=lock,
-            label="Known ciphertext",var1="Ciphertext length",var2="Key")
+            label="Method: Known ciphertext",var1="Ciphertext",var2="Key")
 
         self.methods=[
             self.ciphertext_only,self.known_plaintext,
