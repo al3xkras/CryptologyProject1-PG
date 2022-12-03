@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 matplotlib.use('TkAgg')
 
-from break_vigenere_encoding import CiphertextOnly
+from break_vigenere_encoding import CiphertextOnly,KnownPlainText,ChosenPlainText,ChosenCiphertext
 
 try:
     import Tkinter as tk
@@ -69,6 +69,108 @@ class LaTeXFrame:
         self.pos=(other.pos[0] + LaTeXFrame.dpi + LaTeXFrame.offset, other.pos[1])
         self.draw(size)
 
+class TestMethods:
+    @staticmethod
+    def knownPlaintext(this):
+        if this.lock.locked():
+            return
+        ciphertext = this.var1.get()
+        plaintext = this.var2.get()
+        try:
+            key = KnownPlainText([plaintext],[ciphertext]).deduceKey().lower()
+            this.key_var.set(key)
+        except:
+            this.key_var.set("<Error>")
+
+    @staticmethod
+    def ciphertextOnly_deduceKeyWithUnsecureMessage(this):
+        if this.lock.locked():
+            return
+        ciphertext = this.var1.get()
+        prefix = this.var2.get()
+        try:
+            key = CiphertextOnly(ciphertext).deduceKeyWithUnsecureMessage(prefix).lower()
+            this.key_var.set(key)
+        except:
+            this.key_var.set("<Error>")
+
+    @staticmethod
+    def chosenPlaintext_deduceKey(this):
+        if this.lock.locked():
+            return
+        def fun():
+            ciphertext = this.var1.get()
+            gui.enc.key=this.var2.get()
+            try:
+                key = ChosenPlainText(gui.enc,ciphertext).deduceKey().lower()
+                this.key_var.set(key)
+            except:
+                this.key_var.set("<Error>")
+            this.lock.release()
+        t=threading.Thread(target=fun)
+        t.start()
+        this.lock.acquire()
+
+    @staticmethod
+    def chosenCiphertext_deduceKey(this):
+        if this.lock.locked():
+            return
+        def fun():
+            ciphertext = this.var1.get()
+            gui.enc.key=this.var2.get()
+            try:
+                key = ChosenCiphertext(gui.enc, ciphertext).deduceKey().lower()
+                this.key_var.set(key)
+                this.lock.release()
+            except:
+                this.key_var.set("<Error>")
+        t = threading.Thread(target=fun)
+        t.start()
+        this.lock.acquire()
+
+
+class TestMethodCanvas:
+    def __init__(self, master, test_method, lock, **kwargs):
+        self.lock=lock
+        self.master=master
+        self.test_frame = tk.Frame(self.master, padx=10, pady=10)
+
+        self.var1 = tk.StringVar(self.test_frame)
+        self.var2 = tk.StringVar(self.test_frame)
+        self.key_var = tk.StringVar(self.test_frame)
+
+        self.var1.set("ZPYSRROBR")
+        self.var2.set("pla")
+
+        def _encodingTest():
+            test_method(self)
+
+        self.label=None
+        if "label" in kwargs:
+            self.label=tk.Label(self.master,text=kwargs["label"])
+
+        self.cipher_entry = tk.Entry(self.test_frame, textvariable=self.var1)
+        self.prefix_entry = tk.Entry(self.test_frame,
+                                     textvariable=self.var2)
+        self.key_entry = tk.Entry(self.test_frame, textvariable=self.key_var,
+                                  fg="black", bg="white", bd=0, state="readonly")
+
+        self.btn_text=tk.StringVar(self.master)
+        self.ciphertext_only_btn = tk.Button(self.test_frame, command=_encodingTest, textvariable=self.btn_text)
+
+    def draw(self, *args):
+        if self.label is not None:
+            self.label.pack(side="top")
+        if len(args)==0:
+            args=["Deduce key"]
+        self.btn_text.set(args[0])
+        self.cipher_entry.pack(side="top")
+        self.prefix_entry.pack(side="top")
+        self.key_entry.pack(side="top")
+        self.ciphertext_only_btn.pack(side="top")
+        self.test_frame.pack(side="left")
+
+
 lock1=threading.Lock()
 class VigenereEncodingGUI:
     letter_delay=0.05
@@ -123,40 +225,33 @@ class VigenereEncodingGUI:
         self.controls_fr.pack(side="left", fill="y")
         self.anim_fr.pack(side="top", pady=20)
 
+
         self.symbol_canvas.pack(side="top",anchor="w", padx=50,pady=10)
-        self.break_ciphertext_grid=tk.Frame(self.main)
-        self.ciphertext_only_fr = tk.Frame(self.break_ciphertext_grid)
-        self.known_plaintext_fr = tk.Frame(self.break_ciphertext_grid)
-        self.chosen_plaintext_fr = tk.Frame(self.break_ciphertext_grid)
-        self.chosen_ciphertext_fr = tk.Frame(self.break_ciphertext_grid)
+        self.tests_grid=tk.Frame(self.main)
 
-        self.ciphertext_only_cipher=tk.StringVar(self.ciphertext_only_fr)
-        self.ciphertext_only_cipher_prefix=tk.StringVar(self.ciphertext_only_fr)
-        self.ciphertext_only_key=tk.StringVar(self.ciphertext_only_fr)
+        lock=threading.Lock()
+        self.ciphertext_only = TestMethodCanvas(self.tests_grid,
+            test_method=TestMethods.ciphertextOnly_deduceKeyWithUnsecureMessage,lock=lock,
+            label="Ciphertext only")
+        self.known_plaintext = TestMethodCanvas(self.tests_grid,
+            test_method=TestMethods.knownPlaintext,lock=lock)
+        self.chosen_plaintext = TestMethodCanvas(self.tests_grid,
+            test_method=TestMethods.chosenPlaintext_deduceKey,lock=lock)
+        self.chosen_ciphertext = TestMethodCanvas(self.tests_grid,
+            test_method=TestMethods.chosenCiphertext_deduceKey,lock=lock)
 
-        self.ciphertext_only_cipher.set("ZPYSRROBR")
-        self.ciphertext_only_cipher_prefix.set("pla")
+        self.methods=[
+            self.ciphertext_only,self.known_plaintext,
+            self.chosen_plaintext,self.chosen_ciphertext
+        ]
+        self.method_args=[
+            [],[],
+            [],[]
+        ]
+        for i in range(len(self.methods)):
+            self.methods[i].draw(*self.method_args[i])
 
-        def _ciphertextOnly():
-            ciphertext=self.ciphertext_only_cipher.get()
-            prefix=self.ciphertext_only_cipher_prefix.get()
-            print(ciphertext,prefix)
-            key=CiphertextOnly(ciphertext).deduceKeyWithUnsecureMessage(prefix)
-            self.ciphertext_only_key.set(key)
-
-        self.ciphertext_only_cipher_ent = tk.Entry(self.ciphertext_only_fr, textvariable=self.ciphertext_only_cipher)
-        self.ciphertext_only_prefix_ent = tk.Entry(self.ciphertext_only_fr, textvariable=self.ciphertext_only_cipher_prefix)
-        self.ciphertext_only_key_ent = tk.Entry(self.ciphertext_only_fr, textvariable=self.ciphertext_only_key,fg="black",bg="white",bd=0,state="readonly")
-
-        self.ciphertext_only_btn=tk.Button(self.ciphertext_only_fr,command=_ciphertextOnly,text="Decude key")
-
-        self.ciphertext_only_cipher_ent.pack(side="top")
-        self.ciphertext_only_prefix_ent.pack(side="top")
-        self.ciphertext_only_key_ent.pack(side="top")
-        self.ciphertext_only_btn.pack(side="top")
-
-        self.ciphertext_only_fr.pack(side="left")
-        self.break_ciphertext_grid.pack(side="left")
+        self.tests_grid.pack(side="left")
 
         self.frames=[
             tk.Frame(self.symbol_canvas, width=0, height=LaTeXFrame.dpi),
