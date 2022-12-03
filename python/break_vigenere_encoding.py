@@ -96,8 +96,8 @@ class KnownPlainText:
     """
 
     def __init__(self, ciphertext_samples, plaintext_samples):
-        self.ciphertexts = ciphertext_samples
-        self.plaintexts = plaintext_samples
+        self.ciphertexts = [x.lower() for x in ciphertext_samples]
+        self.plaintexts = [x.lower() for x in plaintext_samples]
 
     def deduceKeyWithUnsecureMessage(self):
         return self.deduceKey()

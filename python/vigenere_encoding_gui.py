@@ -133,7 +133,7 @@ class TestMethodCanvas:
     def __init__(self, master, test_method, lock, **kwargs):
         self.lock=lock
         self.master=master
-        self.test_frame = tk.Frame(self.master, padx=10, pady=10)
+        self.test_frame = tk.Frame(self.master, padx=20, pady=10)
 
         self.var1 = tk.StringVar(self.test_frame)
         self.var2 = tk.StringVar(self.test_frame)
@@ -147,11 +147,13 @@ class TestMethodCanvas:
 
         self.label=None
         if "label" in kwargs:
-            self.label=tk.Label(self.master,text=kwargs["label"])
-
-        self.cipher_entry = tk.Entry(self.test_frame, textvariable=self.var1)
-        self.prefix_entry = tk.Entry(self.test_frame,
-                                     textvariable=self.var2)
+            self.label=tk.Label(self.test_frame,text=kwargs["label"], padx=2, pady=2)
+        self.var1_label=None
+        if "var1" in kwargs:
+            self.var1_label=tk.Label(self.test_frame,text=kwargs["label"], padx=2, pady=2)
+        self.var1_entry = tk.Entry(self.test_frame, textvariable=self.var1)
+        self.var2_entry = tk.Entry(self.test_frame,
+                                   textvariable=self.var2)
         self.key_entry = tk.Entry(self.test_frame, textvariable=self.key_var,
                                   fg="black", bg="white", bd=0, state="readonly")
 
@@ -164,9 +166,9 @@ class TestMethodCanvas:
         if len(args)==0:
             args=["Deduce key"]
         self.btn_text.set(args[0])
-        self.cipher_entry.pack(side="top")
-        self.prefix_entry.pack(side="top")
-        self.key_entry.pack(side="top")
+        self.var1_entry.pack(side="top", padx=5, pady=5)
+        self.var2_entry.pack(side="top", padx=5, pady=5)
+        self.key_entry.pack(side="top", padx=5, pady=5)
         self.ciphertext_only_btn.pack(side="top")
         self.test_frame.pack(side="left")
 
@@ -178,7 +180,7 @@ class VigenereEncodingGUI:
     clear_delay=0.01
     post_clear_delay=1.5
     max_frames=7
-    w=700
+    w=1000
     h=450
     scr_size="%sx%s"%(w,h)
     def __init__(self):
@@ -232,13 +234,16 @@ class VigenereEncodingGUI:
         lock=threading.Lock()
         self.ciphertext_only = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.ciphertextOnly_deduceKeyWithUnsecureMessage,lock=lock,
-            label="Ciphertext only")
+            label="Ciphertext only",var1="Ciphertext",var2="Starts with")
         self.known_plaintext = TestMethodCanvas(self.tests_grid,
-            test_method=TestMethods.knownPlaintext,lock=lock)
+            test_method=TestMethods.knownPlaintext,lock=lock,
+            label="Known plaintext",var1="Ciphertext",var2="Plaintext")
         self.chosen_plaintext = TestMethodCanvas(self.tests_grid,
-            test_method=TestMethods.chosenPlaintext_deduceKey,lock=lock)
+            test_method=TestMethods.chosenPlaintext_deduceKey,lock=lock,
+            label="Chosen plaintext",var1="Plaintext length",var2="Key")
         self.chosen_ciphertext = TestMethodCanvas(self.tests_grid,
-            test_method=TestMethods.chosenCiphertext_deduceKey,lock=lock)
+            test_method=TestMethods.chosenCiphertext_deduceKey,lock=lock,
+            label="Known ciphertext",var1="Ciphertext length",var2="Key")
 
         self.methods=[
             self.ciphertext_only,self.known_plaintext,
