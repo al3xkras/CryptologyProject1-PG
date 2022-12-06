@@ -1,3 +1,9 @@
+"""@package docstring
+Documentation for this module.
+
+More details.
+"""
+
 import threading
 from time import sleep,time
 
@@ -15,11 +21,19 @@ except ImportError:
 
 alphabet = [chr(x) for x in range(ord('a'), ord('z') + 1)]
 
+"""Documentation for this class.
+
+More details.
+"""
 class LaTeXFrame:
     dpi=40
     font_size = 30
     offset=5
     indent=5
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, master:tk.Tk, pos, latex):
         self.fig = None
         self.ax = None
@@ -30,6 +44,10 @@ class LaTeXFrame:
         self.mainframe = None
         self.canvas = None
 
+    """Documentation for this function.
+
+    More details.
+    """
     def draw(self, size=(1,1), included=False):
         root = self.master
 
@@ -58,6 +76,11 @@ class LaTeXFrame:
         self.ax.spines['bottom'].set_visible(False)
         self.ax.spines['left'].set_visible(False)
         self.update()
+
+    """Documentation for this function.
+
+    More details.
+    """
     def update(self):
         text = None
         if self.latex is None or len(self.latex) == 0:
@@ -68,14 +91,30 @@ class LaTeXFrame:
         self.ax.text(0.2, 0.6, text, fontsize=LaTeXFrame.font_size)
         self.canvas.draw()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def remove(self):
         self.mainframe.destroy()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def drawNextTo(self, other,size=(1,1), included=False):
         self.pos=(other.pos[0] + LaTeXFrame.dpi + LaTeXFrame.offset, other.pos[1])
         self.draw(size, included)
 
+"""Documentation for this class.
+
+More details.
+"""
 class TestMethods:
+    """Documentation for this function.
+
+    More details.
+    """
     @staticmethod
     def knownPlaintext(this):
         if this.lock.locked():
@@ -88,6 +127,10 @@ class TestMethods:
         except:
             this.key_var.set("<Error>")
 
+    """Documentation for this function.
+
+    More details.
+    """
     @staticmethod
     def ciphertextOnly_deduceKeyWithUnsecureMessage(this):
         if this.lock.locked():
@@ -100,6 +143,10 @@ class TestMethods:
         except:
             this.key_var.set("<Error>")
 
+    """Documentation for this function.
+
+    More details.
+    """
     @staticmethod
     def chosenPlaintext_deduceKey(this):
         if this.lock.locked():
@@ -117,6 +164,10 @@ class TestMethods:
         t.start()
         this.lock.acquire()
 
+    """Documentation for this function.
+
+    More details.
+    """
     @staticmethod
     def chosenCiphertext_deduceKey(this):
         if this.lock.locked():
@@ -134,8 +185,15 @@ class TestMethods:
         t.start()
         this.lock.acquire()
 
+"""Documentation for this class.
 
+More details.
+"""
 class TestMethodCanvas:
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, master, test_method, lock, **kwargs):
         self.lock=lock
         self.master=master
@@ -189,6 +247,10 @@ class TestMethodCanvas:
         self.btn_text=tk.StringVar(self.master)
         self.ciphertext_only_btn = tk.Button(self.test_frame, command=_encodingTest, textvariable=self.btn_text)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def draw(self, *args):
         if self.label is not None:
             self.label.pack(side="top",pady=10,anchor="w")
@@ -205,6 +267,10 @@ class TestMethodCanvas:
 
 
 lock1=threading.Lock()
+"""Documentation for this class.
+
+More details.
+"""
 class VigenereEncodingGUI:
     letter_delay=0.05
     font= "16"
@@ -214,6 +280,11 @@ class VigenereEncodingGUI:
     w=1225
     h=500
     scr_size="%sx%s"%(w,h)
+
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self):
         self.enc=None
         self.operating_thread=None
@@ -311,6 +382,10 @@ class VigenereEncodingGUI:
         self.op1=self._drawNext("+"+self.operator_str, 1, _include=False, size=(VigenereEncodingGUI.max_frames,1))
         self.op2=self._drawNext("=", 3, _include=False, size=(VigenereEncodingGUI.max_frames,1))
 
+    """Documentation for this function.
+
+    More details.
+    """
     def _interrupt(self):
         if self.operating_thread is None:
             return
@@ -319,6 +394,10 @@ class VigenereEncodingGUI:
             return
         self.anim_interrupt_ev.set()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def sleep(self, delay):
         t0=time()
         while not self.anim_interrupt_ev.is_set() and time()-t0<delay:
@@ -326,6 +405,10 @@ class VigenereEncodingGUI:
         if self.anim_interrupt_ev.is_set():
             raise Exception("interrupted")
 
+    """Documentation for this function.
+
+    More details.
+    """
     def _encode_input(self):
         assert self.enc is not None
         if self.operating_thread is not None:
@@ -350,6 +433,10 @@ class VigenereEncodingGUI:
         lock.acquire()
         self.operating_thread.start()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def _decode_input(self):
         assert self.enc is not None
         if self.operating_thread is not None:
@@ -374,17 +461,29 @@ class VigenereEncodingGUI:
         lock.acquire()
         self.operating_thread.start()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def resize(self,w,h):
         scr_size="%sx%s"%(w,h)
         self.main.geometry(scr_size)
         self.w=w
         self.h=h
 
+    """Documentation for this function.
+
+    More details.
+    """
     def drawNextLetter(self, keyLetter, textLetter, encoded, size=(1,1), include=True):
         self._drawNext(keyLetter, 2, size=size, _include=include)
         self._drawNext(textLetter, 0, size=size, _include=include)
         self._drawNext(encoded, 4, size=size, _include=include)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def _drawNext(self, latex, pos=0, offset=None, _include=True, size=(1,1)):
         w=offset
         if offset is None:
@@ -408,6 +507,10 @@ class VigenereEncodingGUI:
             self.fragment_symbols=self.fragment_symbols[self.letter_frames_count:]
         return sym
 
+    """Documentation for this function.
+
+    More details.
+    """
     def _clearFragment(self,encoder=None):
         for x in self.fragment_symbols:
             x.remove()
@@ -418,20 +521,18 @@ class VigenereEncodingGUI:
         if encoder is None:
             self.drawNextLetter("", "", "")
 
-    def drawNextDecodedLetter(self,keyLetter, encodedLetter, decoded):
-        pass
     def update(self):
         self.symbol_canvas.update()
 
     def mainloop(self):
         self.symbol_canvas.mainloop()
 
-class BreakVigenereEncodingGUI:
-    def __init__(self, screen):
-        self.screen = screen
-
 gui=None
 lock2=threading.Lock()
+"""Documentation for this function.
+
+More details.
+"""
 def _initGui():
     global gui
     if gui is None:
@@ -441,6 +542,10 @@ def _initGui():
             gui._clearFragment()
         lock2.release()
 
+"""Documentation for this function.
+
+More details.
+"""
 def mainloop_handler(function):
     global gui
     _initGui()
@@ -453,7 +558,10 @@ def mainloop_handler(function):
         gui.mainloop()
     return wrapper
 
+"""Documentation for this function.
 
+More details.
+"""
 def letter_encode_decorator(function):
     global gui
     _initGui()
@@ -476,6 +584,10 @@ def letter_encode_decorator(function):
         return encoded
     return wrapper
 
+"""Documentation for this function.
+
+More details.
+"""
 def string_encoder(function):
     global gui
     _initGui()
@@ -487,6 +599,10 @@ def string_encoder(function):
         return res
     return wrapper
 
+"""Documentation for this function.
+
+More details.
+"""
 def string_decoder(function):
     global gui
     _initGui()
@@ -498,6 +614,10 @@ def string_decoder(function):
         return res
     return wrapper
 
+"""Documentation for this function.
+
+More details.
+"""
 def letter_decode_decorator(function):
     global gui
     _initGui()

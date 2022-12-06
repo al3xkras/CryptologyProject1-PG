@@ -1,3 +1,9 @@
+"""@package docstring
+Documentation for this module.
+
+More details.
+"""
+
 enco=None
 hacking_types = [
     "key_deduction",
@@ -5,8 +11,16 @@ hacking_types = [
     "plaintext_modification"
 ]
 
+"""Documentation for this class.
 
+More details.
+"""
 class CipherUtils:
+    """Documentation for this function
+.
+
+    More details.
+    """
     @staticmethod
     def checkEveryNthSymbolEq(string, symbol, n, shift):
         for i in range(shift, len(string), n):
@@ -14,6 +28,11 @@ class CipherUtils:
                 return False
         return True
 
+    """Documentation for this function
+.
+
+    More details.
+    """
     @staticmethod
     def checkEveryNthSymbolMatchesModulo(Plaintext, Ciphertext, n, shift):
         assert len(Plaintext) == len(Ciphertext)
@@ -29,6 +48,11 @@ class CipherUtils:
                 return False, None
         return True, delta
 
+    """Documentation for this function
+.
+
+    More details.
+    """
     @staticmethod
     def shortestCyclicSubstringLen(string):
         cycleLen = 1
@@ -45,7 +69,10 @@ class CipherUtils:
             cycleLen += 1
         return cycleLen
 
+"""Documentation for this function.
 
+More details.
+"""
 class CiphertextOnly:
     """
     Ewa knows that a given ciphertext is encoded
@@ -57,28 +84,56 @@ class CiphertextOnly:
         "Dear <name>" "Sincerely yours, <name>" etc
     """
 
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, Ciphertext):
         self.ciphertext = Ciphertext.lower()
         pass
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyWithUnsecureMessage(self, startsWith):
         return KnownPlainText([startsWith], [self.ciphertext[:len(startsWith)]]).deduceKey()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKey(self):
         raise Exception(
             "It is impossible to deduce the key given only ciphertext (additional assumptions are required)")
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deducePlainText(self):
         Key = self.deduceKey()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deducePlainTextWithUnsecureMessage(self, startsWith):
         Key = self.deduceKeyWithUnsecureMessage(startsWith)
         enco.key=Key
         return enco.decodeString(self.ciphertext)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def modifyMessage(self):
         Key = self.deduceKey()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def modifyUnsecureMessage(self, startsWith):
         _plaintext = self.deducePlainTextWithUnsecureMessage(startsWith)
         Key = self.deduceKeyWithUnsecureMessage(startsWith)
@@ -86,7 +141,10 @@ class CiphertextOnly:
         enco.key=Key
         return enco.encodeString(_plaintext).lower()
 
+"""Documentation for this class.
 
+More details.
+"""
 class KnownPlainText:
     """
     Ewa knows that a given ciphertext is encoded
@@ -95,13 +153,25 @@ class KnownPlainText:
         encoded with the same algorithm
     """
 
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, ciphertext_samples, plaintext_samples):
         self.ciphertexts = [x.lower() for x in ciphertext_samples]
         self.plaintexts = [x.lower() for x in plaintext_samples]
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyWithUnsecureMessage(self):
         return self.deduceKey()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKey(self):
         iterKeyLength = 0
         maxLen = max(len(x) for x in self.plaintexts)
@@ -131,6 +201,10 @@ class KnownPlainText:
             if matched:
                 return keyGlobal
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyLength(self):
         iterKeyLength = 0
         maxLen = max(len(x) for x in self.plaintexts)
@@ -152,13 +226,24 @@ class KnownPlainText:
                 return iterKeyLength
         raise Exception("Failed to deduce the key length.")
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deducePlainText(self):
         raise Exception("The solution is obvious after the key is found")
 
+    """Documentation for this function.
+
+    More details.
+    """
     def modifyMessage(self):
         raise Exception("The solution is obvious after the key is found")
 
+"""Documentation for this class.
 
+More details.
+"""
 class ChosenPlainText:
     """
     Ewa knows that a given ciphertext is encoded
@@ -166,30 +251,57 @@ class ChosenPlainText:
     Ewa has unlimited access to the encoder
     """
 
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, encoder, Plaintext):
         self.encoder = encoder
         self.plaintext = Plaintext
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyWithUnsecureMessage(self):
         return self.deduceKey()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKey(self):
         keyLen = self.deduceKeyLength()
         decoded = self.encoder.encodeString("a" * keyLen)
         return decoded
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyLength(self):
         text = "a" * len(self.plaintext)
         textEncoded = self.encoder.encodeString(text)
         return CipherUtils.shortestCyclicSubstringLen(textEncoded)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deducePlainText(self):
         return self.plaintext
 
+    """Documentation for this function.
+
+    More details.
+    """
     def modifyMessage(self):
         raise Exception("This action does not require breaking the cipher")
 
+"""Documentation for this class.
 
+More details.
+"""
 class ChosenCiphertext:
     """
     Ewa knows that a given ciphertext is encoded
@@ -197,18 +309,35 @@ class ChosenCiphertext:
     Ewa has unlimited access to the decoder
     """
 
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, decoder, Ciphertext):
+
         self.decoder = decoder
         self.ciphertext = Ciphertext
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyWithUnsecureMessage(self):
         return self.deduceKey()
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKeyLength(self):
         text = "a" * len(self.ciphertext)
         textDecoded = self.decoder.decodeString(text)
         return CipherUtils.shortestCyclicSubstringLen(textDecoded)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deduceKey(self):
         key_length = self.deduceKeyLength()
         decoded = self.decoder.decodeString("a" * key_length)
@@ -216,8 +345,16 @@ class ChosenCiphertext:
         alpha = dict((alphabet[i], i) for i in range(len(alphabet)))
         return "".join(alphabet[(-alpha[x]) % len(alphabet)] for x in decoded)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def deducePlainText(self):
         return self.decoder.decodeString(self.ciphertext)
 
+    """Documentation for this function.
+
+    More details.
+    """
     def modifyMessage(self):
         raise Exception("the solution is obvious.")

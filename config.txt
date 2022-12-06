@@ -1,0 +1,11 @@
+PROJECT_NAME      = "Vigenere Encoding"
+OUTPUT_DIRECTORY  = docs
+GENERATE_LATEX    = NO
+GENERATE_MAN      = NO
+GENERATE_RTF      = NO
+OPTIMIZE_OUTPUT_JAVA = YES
+INPUT             = "python"
+RECURSIVE = YES
+QUIET             = NO
+JAVADOC_AUTOBRIEF = YES
+SEARCHENGINE      = NO

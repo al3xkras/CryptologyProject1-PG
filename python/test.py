@@ -1,3 +1,9 @@
+"""@package docstring
+Documentation for this module.
+
+More details.
+"""
+
 from vigenere_encoding_gui import VigenereEncodingGUI,mainloop_handler
 import vigenere_encoding_gui
 from vigenere_encoding import VigenereEncoding

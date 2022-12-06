@@ -1,5 +1,15 @@
+"""@package docstring
+Documentation for this module.
+
+More details.
+"""
+
 from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator,string_encoder,string_decoder, mainloop_handler
 
+"""Documentation for this class.
+
+More details.
+"""
 class VigenereEncoding:
     """
     A python implementation of the Vigenere Cipher
@@ -12,6 +22,10 @@ class VigenereEncoding:
     """
     alphabet = [chr(x) for x in range(ord('a'), ord('z') + 1)]
 
+    """Documentation for this function.
+
+    More details.
+    """
     def __init__(self, key: str, alphabet=None):
         self.key = key
         if alphabet is not None:
@@ -20,18 +34,30 @@ class VigenereEncoding:
             self.alphabet = VigenereEncoding.alphabet
         self.alpha = dict((self.alphabet[i], i) for i in range(len(self.alphabet)))
 
+    """Documentation for this function.
+
+    More details.
+    """
     @letter_encode_decorator
     def encodeLetter(self, textLetter, keyLetter):
         textLetter = textLetter[0].lower()
         keyLetter = keyLetter[0].lower()
         return self.alphabet[(self.alpha[textLetter] + self.alpha[keyLetter]) % len(self.alpha)]
 
+    """Documentation for this function.
+
+    More details.
+    """
     @letter_decode_decorator
     def decodeLetter(self, encodedLetter, keyLetter):
         encodedLetter = encodedLetter[0].lower()
         keyLetter = keyLetter[0].lower()
         return self.alphabet[(self.alpha[encodedLetter] - self.alpha[keyLetter]) % len(self.alpha)]
 
+    """Documentation for this function.
+
+    More details.
+    """
     @string_encoder
     def encodeString(self, string):
         i = 0
@@ -42,6 +68,10 @@ class VigenereEncoding:
             i = (i + 1) % mod
         return encoded.upper()
 
+    """Documentation for this function.
+
+    More details.
+    """
     @string_decoder
     def decodeString(self, string):
         i = 0

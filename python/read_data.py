@@ -1,3 +1,9 @@
+"""@package docstring
+Documentation for this module.
+
+More details.
+"""
+
 import io
 import sys
 
@@ -6,8 +12,6 @@ import sys
 Program czyście tekst ze znaków białych, symboli diakrytycznych, cyfr, 
 a litery zamienia na małe oraz formatuje tekst w 7 kolumn po 5 znaków.
 """
-
-
 def wczytaj(a, nazwa_pliku):
     try:
         t = io.open(nazwa_pliku, mode="r", encoding="utf-8")
