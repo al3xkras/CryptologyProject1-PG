@@ -5,7 +5,7 @@ More details.
 """
 
 enco=None
-hacking_types = [
+attack_types = [
     "key_deduction",
     "plaintext_deduction",
     "plaintext_modification"
@@ -29,7 +29,6 @@ class CipherUtils:
 
     """Documentation for this function
 .
-
     More details.
     """
     @staticmethod

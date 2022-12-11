@@ -566,7 +566,8 @@ More details.
 """
 def letter_encode_decorator(function):
     global gui,main_initialized
-    _initGui()
+    if not main_initialized:
+        _initGui()
     keyLetter = None
     encoded = None
     textLetter = None
@@ -594,7 +595,8 @@ More details.
 """
 def string_encoder(function):
     global gui,main_initialized
-    _initGui()
+    if not main_initialized:
+        _initGui()
     def wrapper(self, *args, **kwargs):
         if not main_initialized:
             return function(self, *args, **kwargs)
@@ -611,7 +613,8 @@ More details.
 """
 def string_decoder(function):
     global gui,main_initialized
-    _initGui()
+    if not main_initialized:
+        _initGui()
     def wrapper(self, *args, **kwargs):
         if not main_initialized:
             return function(self, *args, **kwargs)
@@ -628,7 +631,8 @@ More details.
 """
 def letter_decode_decorator(function):
     global gui,main_initialized
-    _initGui()
+    if not main_initialized:
+        _initGui()
     keyLetter = None
     decoded = None
     encodedLetter = None

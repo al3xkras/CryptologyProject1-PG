@@ -4,7 +4,7 @@ Documentation for this module.
 More details.
 """
 
-from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator,string_encoder,string_decoder, mainloop_handler
+from vigenere_encoding_gui import letter_encode_decorator, letter_decode_decorator,string_encoder,string_decoder
 
 """Documentation for this class.
 
@@ -86,6 +86,5 @@ class VigenereEncoding:
 
 if __name__ == '__main__':
     v=VigenereEncoding("abc")
-
-    t=v.encodeString("egejorjgioeroigr")
+    t=v.encodeString("iatemybreakfast")
     print(t)

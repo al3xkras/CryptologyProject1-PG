@@ -4,12 +4,12 @@ Documentation for this module.
 More details.
 """
 
-from vigenere_encoding_gui import VigenereEncodingGUI,mainloop_handler
-import vigenere_encoding_gui
-from vigenere_encoding import VigenereEncoding
-from break_vigenere_encoding import *
-
 import break_vigenere_encoding
+import vigenere_encoding_gui
+from break_vigenere_encoding import *
+from vigenere_encoding_gui import mainloop_handler
+
+
 @mainloop_handler
 def main_break_enco_methods():
     action = "notest"
@@ -17,7 +17,6 @@ def main_break_enco_methods():
         key = "master"
         break_vigenere_encoding.enco.key=key
         encoding = break_vigenere_encoding.enco
-
     elif action == "test1":
         key = "master"
         break_vigenere_encoding.enco.key=key
@@ -35,7 +34,7 @@ def main_break_enco_methods():
         break_vigenere_encoding.enco.key=key
         encoding = break_vigenere_encoding.enco
         plaintexts = [
-            "sometexttobedecodedblahblahblah", "happynewyear", "mydearfriends"
+            "sometexttobedecoded",
         ]
         ciphers = [encoding.encodeString(x).lower() for x in plaintexts]
         test2 = KnownPlainText(plaintexts, ciphers)
