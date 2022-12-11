@@ -18,7 +18,6 @@ More details.
 class CipherUtils:
     """Documentation for this function
 .
-
     More details.
     """
     @staticmethod
@@ -50,7 +49,6 @@ class CipherUtils:
 
     """Documentation for this function
 .
-
     More details.
     """
     @staticmethod

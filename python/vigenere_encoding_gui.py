@@ -83,7 +83,7 @@ class LaTeXFrame:
     """
     def update(self):
         text = None
-        if self.latex is None or len(self.latex) == 0:
+        if self.latex is None or len(self.latex.strip()) == 0:
             text = "$\\mathbb{}$"
         else:
             text = "$" + self.latex + "$"
