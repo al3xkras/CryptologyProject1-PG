@@ -203,8 +203,6 @@ class TestMethodCanvas:
         self.var2 = tk.StringVar(self.test_frame)
         self.key_var = tk.StringVar(self.test_frame)
 
-        self.var1.set("ZPYSRROBR")
-        self.var2.set("pla")
 
         def _encodingTest():
             test_method(self)
@@ -299,11 +297,11 @@ class VigenereEncodingGUI:
         self.controls_fr=tk.Frame(self.main)
 
         self.plaintext_var=tk.StringVar(self.controls_fr)
-        self.plaintext_var.set("plaintext")
+        self.plaintext_var.set("differential geometry")
         self.text_input=tk.Entry(self.controls_fr, textvariable=self.plaintext_var, font=VigenereEncodingGUI.font)
 
         self.key_var=tk.StringVar(self.controls_fr)
-        self.key_var.set("key")
+        self.key_var.set("curve")
         self.key_input=tk.Entry(self.controls_fr, textvariable=self.key_var, font=VigenereEncodingGUI.font)
 
         self.output_var=tk.StringVar(self.controls_fr)
@@ -546,8 +544,12 @@ def _initGui():
 
 More details.
 """
+main_initialized=False
 def mainloop_handler(function):
-    global gui
+    global gui,main_initialized
+    if main_initialized:
+        raise Exception("the program can have only one mainloop handler")
+    main_initialized=True
     _initGui()
     def wrapper(*args, **kwargs):
         def func():
@@ -563,12 +565,14 @@ def mainloop_handler(function):
 More details.
 """
 def letter_encode_decorator(function):
-    global gui
+    global gui,main_initialized
     _initGui()
     keyLetter = None
     encoded = None
     textLetter = None
     def wrapper(self, *args, **kwargs):
+        if not main_initialized:
+            return function(self, *args, **kwargs)
         gui.sleep(VigenereEncodingGUI.letter_delay/gui.animation_speed.get())
         lock1.acquire()
         nonlocal keyLetter, encoded, textLetter
@@ -589,9 +593,11 @@ def letter_encode_decorator(function):
 More details.
 """
 def string_encoder(function):
-    global gui
+    global gui,main_initialized
     _initGui()
     def wrapper(self, *args, **kwargs):
+        if not main_initialized:
+            return function(self, *args, **kwargs)
         gui._clearFragment(encoder=True)
         res = function(self,*args,**kwargs)
         sleep(VigenereEncodingGUI.post_clear_delay)
@@ -604,9 +610,11 @@ def string_encoder(function):
 More details.
 """
 def string_decoder(function):
-    global gui
+    global gui,main_initialized
     _initGui()
     def wrapper(self, *args, **kwargs):
+        if not main_initialized:
+            return function(self, *args, **kwargs)
         gui._clearFragment(encoder=False)
         res = function(self,*args,**kwargs)
         sleep(VigenereEncodingGUI.post_clear_delay)
@@ -619,12 +627,14 @@ def string_decoder(function):
 More details.
 """
 def letter_decode_decorator(function):
-    global gui
+    global gui,main_initialized
     _initGui()
     keyLetter = None
     decoded = None
     encodedLetter = None
     def wrapper(self, *args, **kwargs):
+        if not main_initialized:
+            return function(self, *args, **kwargs)
         gui.sleep(VigenereEncodingGUI.letter_delay/gui.animation_speed.get())
         nonlocal keyLetter, decoded, encodedLetter
         keyLetter = kwargs["keyLetter"] if "keyLetter" in kwargs else args[1]

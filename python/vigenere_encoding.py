@@ -85,7 +85,7 @@ class VigenereEncoding:
 
 
 if __name__ == '__main__':
-    @mainloop_handler
-    def main():
-        v = VigenereEncoding("lemon")
-    main()
+    v=VigenereEncoding("abc")
+
+    t=v.encodeString("egejorjgioeroigr")
+    print(t)
