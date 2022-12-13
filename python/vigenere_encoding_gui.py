@@ -152,10 +152,10 @@ class TestMethods:
         if this.lock.locked():
             return
         def fun():
-            ciphertext = this.var1.get()
+            ciphertext_len = min(25,int(this.var1.get()))
             gui.enc.key=this.var2.get()
             try:
-                key = ChosenPlainText(gui.enc,ciphertext).deduceKey().lower()
+                key = ChosenPlainText(gui.enc,'a'*ciphertext_len).deduceKey().lower()
                 this.key_var.set(key)
             except:
                 this.key_var.set("<Error>")
@@ -173,10 +173,10 @@ class TestMethods:
         if this.lock.locked():
             return
         def fun():
-            ciphertext = this.var1.get()
+            ciphertext_len = min(25,int(this.var1.get()))
             gui.enc.key=this.var2.get()
             try:
-                key = ChosenCiphertext(gui.enc, ciphertext).deduceKey().lower()
+                key = ChosenCiphertext(gui.enc, 'a'*ciphertext_len).deduceKey().lower()
                 this.key_var.set(key)
                 this.lock.release()
             except:
@@ -344,10 +344,10 @@ class VigenereEncodingGUI:
             label="Method: Known plaintext",var1="Ciphertext",var2="Plaintext")
         self.chosen_plaintext = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.chosenPlaintext_deduceKey,lock=lock,
-            label="Method: Chosen plaintext",var1="Plaintext",var2="Key")
+            label="Method: Chosen plaintext",var1="Max text len.",var2="Key")
         self.chosen_ciphertext = TestMethodCanvas(self.tests_grid,
             test_method=TestMethods.chosenCiphertext_deduceKey,lock=lock,
-            label="Method: Known ciphertext",var1="Ciphertext",var2="Key")
+            label="Method: Chosen ciphertext",var1="Max text len.",var2="Key")
 
         self.methods=[
             self.ciphertext_only,self.known_plaintext,

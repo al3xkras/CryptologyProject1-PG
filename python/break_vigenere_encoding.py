@@ -102,7 +102,7 @@ class CiphertextOnly:
     """
     def deduceKey(self):
         raise Exception(
-            "It is impossible to deduce the key given only ciphertext (additional assumptions are required)")
+            "It is impossible to deduce the key given only the ciphertext (additional assumptions are required)")
 
     """Documentation for this function.
 
@@ -268,9 +268,8 @@ class ChosenPlainText:
     More details.
     """
     def deduceKey(self):
-        keyLen = self.deduceKeyLength()
-        decoded = self.encoder.encodeString("a" * keyLen)
-        return decoded
+        enc,length = self.deduceKeyLength()
+        return enc[:length]
 
     """Documentation for this function.
 
@@ -279,7 +278,7 @@ class ChosenPlainText:
     def deduceKeyLength(self):
         text = "a" * len(self.plaintext)
         textEncoded = self.encoder.encodeString(text)
-        return CipherUtils.shortestCyclicSubstringLen(textEncoded)
+        return textEncoded,CipherUtils.shortestCyclicSubstringLen(textEncoded)
 
     """Documentation for this function.
 
@@ -329,18 +328,17 @@ class ChosenCiphertext:
     def deduceKeyLength(self):
         text = "a" * len(self.ciphertext)
         textDecoded = self.decoder.decodeString(text)
-        return CipherUtils.shortestCyclicSubstringLen(textDecoded)
+        return textDecoded,CipherUtils.shortestCyclicSubstringLen(textDecoded)
 
     """Documentation for this function.
 
     More details.
     """
     def deduceKey(self):
-        key_length = self.deduceKeyLength()
-        decoded = self.decoder.decodeString("a" * key_length)
+        decoded,key_length = self.deduceKeyLength()
         alphabet = [chr(x) for x in range(ord('a'), ord('z') + 1)]
         alpha = dict((alphabet[i], i) for i in range(len(alphabet)))
-        return "".join(alphabet[(-alpha[x]) % len(alphabet)] for x in decoded)
+        return "".join(alphabet[(-alpha[x]) % len(alphabet)] for x in decoded[:key_length])
 
     """Documentation for this function.
 

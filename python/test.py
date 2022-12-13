@@ -53,12 +53,24 @@ def main_break_enco_methods():
 
     elif action == "test4":
         key = "lemon"
+        text="attack"
+        print(text)
         break_vigenere_encoding.enco.key=key
         encoding = break_vigenere_encoding.enco
-        test3 = ChosenCiphertext(encoding, encoding.encodeString("attackatdawn"))
+        test3 = ChosenCiphertext(encoding, encoding.encodeString(text))
         keyLength = test3.deduceKeyLength()
         print(keyLength)
-        print(test3.deduceKey())
+        print(test3.deduceKeyWithUnsecureMessage())
+    else:
+        key = "lemon"
+        text="attackatdawn"
+        print(text)
+        break_vigenere_encoding.enco.key=key
+        encoding = break_vigenere_encoding.enco
+        test3 = CiphertextOnly(encoding.encodeString(text))
+
+        print(test3.deduceKeyWithUnsecureMessage("attack"))
+
 
 if __name__ == '__main__':
     from vigenere_encoding import VigenereEncoding
