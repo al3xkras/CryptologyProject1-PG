@@ -10,9 +10,9 @@ from break_vigenere_encoding import *
 from vigenere_encoding_gui import mainloop_handler
 
 
-@mainloop_handler
+#@mainloop_handler
 def main_break_enco_methods():
-    action = "notest"
+    action = "test2"
     if action == "notest":
         key = "master"
         break_vigenere_encoding.enco.key=key
@@ -30,13 +30,20 @@ def main_break_enco_methods():
         print(test1.deduceKeyWithUnsecureMessage("thesolu"))
 
     elif action == "test2":
-        key = "avocado"
+        key = "lemon"
         break_vigenere_encoding.enco.key=key
         encoding = break_vigenere_encoding.enco
         plaintexts = [
-            "sometexttobedecoded",
+            "thisisourproject","itsjustatest","iwouldliketodringachocolate"
         ]
-        ciphers = [encoding.encodeString(x).lower() for x in plaintexts]
+        print(plaintexts)
+
+        ciphers = [
+            "ELUGVDSGFCCSVSPE".lower(),
+            "TXEXHDXMHRDX".lower(),
+            "TAAIYOPUYRESPFVYKMQUZGAZNEI".lower()
+        ]
+        print(ciphers)
         test2 = KnownPlainText(plaintexts, ciphers)
         keyLength = test2.deduceKeyLength()
         print(keyLength)
